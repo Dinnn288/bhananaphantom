@@ -1,0 +1,226 @@
+@import "tailwindcss";
+
+@layer base {
+  body {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+  }
+}
+
+.font-bebas {
+  font-family: 'Bebas Neue', sans-serif;
+}
+
+.font-cinzel {
+  font-family: 'Cinzel', serif;
+}
+
+/* Artistic Flair Theme Accents & Gradients */
+.artistic-radial-bg {
+  background-color: #0A0A0A;
+  background-image: radial-gradient(circle at center, #1A1A1A 0%, #050505 100%);
+}
+
+.artistic-pattern {
+  background-image: repeating-linear-gradient(45deg, #FF0033 0, #FF0033 1px, transparent 0, transparent 50%);
+  background-size: 40px 40px;
+}
+
+.artistic-glow-red {
+  box-shadow: 0 0 25px rgba(255, 0, 51, 0.35);
+}
+
+.artistic-glow-blue {
+  box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
+}
+
+/* Persona 5 Dynamic Slanted Style */
+.p5-skew {
+  transform: skewX(-12deg);
+}
+
+.p5-skew-reverse {
+  transform: skewX(12deg);
+}
+
+.p5-shadow-red {
+  box-shadow: 4px 4px 0px #FF0033;
+}
+
+.p5-shadow-white {
+  box-shadow: 4px 4px 0px #ffffff;
+}
+
+.p5-shadow-black {
+  box-shadow: 5px 5px 0px #000000;
+}
+
+.p5-shadow-cyan {
+  box-shadow: 4px 4px 0px #00f5d4;
+}
+
+.p5-shadow-yellow {
+  box-shadow: 4px 4px 0px #ffd166;
+}
+
+/* Halftone dot pattern */
+.bg-halftone {
+  background-image: radial-gradient(rgba(255, 0, 51, 0.2) 1.5px, transparent 1.5px);
+  background-size: 14px 14px;
+}
+
+.bg-halftone-dark {
+  background-image: radial-gradient(rgba(255, 255, 255, 0.12) 1.5px, transparent 1.5px);
+  background-size: 12px 12px;
+}
+
+/* Custom Animations */
+@keyframes shake {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  20% { transform: translate(-4px, 3px) rotate(-1deg); }
+  40% { transform: translate(4px, -2px) rotate(1.5deg); }
+  60% { transform: translate(-3px, -3px) rotate(-1deg); }
+  80% { transform: translate(3px, 2px) rotate(1deg); }
+}
+
+.animate-shake {
+  animation: shake 0.35s ease-in-out;
+}
+
+.animate-heavy-shake {
+  animation: shake 0.2s ease-in-out infinite;
+}
+
+@keyframes pulse-red {
+  0%, 100% { opacity: 0.3; transform: scale(1); }
+  50% { opacity: 0.8; transform: scale(1.04); }
+}
+
+.animate-pulse-red {
+  animation: pulse-red 2s infinite ease-in-out;
+}
+
+@keyframes rage-glow {
+  0%, 100% { filter: drop-shadow(0 0 8px #FF0033) drop-shadow(0 0 20px #990000); }
+  50% { filter: drop-shadow(0 0 22px #FF0033) drop-shadow(0 0 35px #FF0055); }
+}
+
+.animate-rage-glow {
+  animation: rage-glow 1.2s infinite ease-in-out;
+}
+
+@keyframes spirit-slide-in {
+  0% { transform: translateX(-100%) skewX(-12deg); opacity: 0; }
+  60% { transform: translateX(5%) skewX(-12deg); opacity: 1; }
+  100% { transform: translateX(0%) skewX(-12deg); opacity: 1; }
+}
+
+.animate-spirit-slide {
+  animation: spirit-slide-in 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes elemental-slash {
+  0% { transform: scaleX(0) rotate(-25deg); opacity: 0; }
+  50% { transform: scaleX(1.4) rotate(-25deg); opacity: 1; }
+  100% { transform: scaleX(1.8) rotate(-25deg); opacity: 0; }
+}
+
+.animate-elemental-slash {
+  animation: elemental-slash 0.45s ease-out forwards;
+}
+
+@keyframes lightning-flash {
+  0%, 100% { opacity: 0; }
+  20%, 60% { opacity: 1; }
+  40%, 80% { opacity: 0.2; }
+}
+
+.animate-lightning {
+  animation: lightning-flash 0.5s ease-in-out forwards;
+}
+
+@keyframes ice-burst {
+  0% { transform: scale(0.3) rotate(0deg); opacity: 0; }
+  50% { transform: scale(1.2) rotate(15deg); opacity: 1; }
+  100% { transform: scale(1.5) rotate(30deg); opacity: 0; }
+}
+
+.animate-ice-burst {
+  animation: ice-burst 0.6s ease-out forwards;
+}
+
+@keyframes holy-beam {
+  0% { transform: scaleY(0); opacity: 0; }
+  40% { transform: scaleY(1); opacity: 1; }
+  100% { transform: scaleY(1); opacity: 0; }
+}
+
+.animate-holy-beam {
+  animation: holy-beam 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes fire-erupt {
+  0% { transform: scale(0.4) translateY(20px); opacity: 0; }
+  50% { transform: scale(1.3) translateY(-10px); opacity: 1; }
+  100% { transform: scale(1.6) translateY(-25px); opacity: 0; }
+}
+
+.animate-fire-erupt {
+  animation: fire-erupt 0.6s ease-out forwards;
+}
+
+@keyframes wind-vortex {
+  0% { transform: rotate(0deg) scale(0.5); opacity: 0; }
+  50% { transform: rotate(180deg) scale(1.2); opacity: 0.9; }
+  100% { transform: rotate(360deg) scale(1.5); opacity: 0; }
+}
+
+.animate-wind-vortex {
+  animation: wind-vortex 0.55s ease-out forwards;
+}
+
+@keyframes curse-darkness {
+  0% { transform: scale(0.2); opacity: 0; }
+  50% { transform: scale(1.2); opacity: 0.95; }
+  100% { transform: scale(1.5); opacity: 0; }
+}
+
+.animate-curse-darkness {
+  animation: curse-darkness 0.6s ease-out forwards;
+}
+
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.animate-spin-slow {
+  animation: spin-slow 8s linear infinite;
+}
+
+@keyframes reverse-spin {
+  from { transform: rotate(360deg); }
+  to { transform: rotate(0deg); }
+}
+
+.animate-reverse-spin {
+  animation: reverse-spin 6s linear infinite;
+}
+
+/* Custom Scrollbars in Neon Crimson */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0A0A0A;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #FF0033;
+  border-radius: 2px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #ff3355;
+}

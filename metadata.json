@@ -1,0 +1,7 @@
+{
+  "name": "Bhawana Phantom: Roh Sekolah Ghaib",
+  "description": "Game RPG pertarungan bergaya Persona 5X dengan latar horor urban sekolah berhantu, sistem summon roh pendamping, All-Out Attack, dan misteri koridor terkutuk.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
+
