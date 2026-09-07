@@ -17,8 +17,8 @@ import {
 } from 'lucide-react';
 
 interface NavigationHeaderProps {
-  currentTab: 'story' | 'battle' | 'explorer' | 'altar' | 'archive';
-  onSelectTab: (tab: 'story' | 'battle' | 'explorer' | 'altar' | 'archive') => void;
+  currentTab: 'story' | 'battle' | 'explorer' | 'gacha' | 'upgrade' | 'archive' | 'altar';
+  onSelectTab: (tab: 'story' | 'battle' | 'explorer' | 'gacha' | 'upgrade' | 'archive') => void;
   spiritGems: number;
   playerLevel: number;
   activeProfileName?: string;
@@ -63,11 +63,12 @@ export const NavigationHeader: React.FC<NavigationHeaderProps> = ({
     }
   };
 
-  const navItems: { id: 'story' | 'battle' | 'explorer' | 'altar' | 'archive'; label: string; shortLabel: string; icon: React.ReactNode }[] = [
+  const navItems: { id: 'story' | 'battle' | 'explorer' | 'gacha' | 'upgrade' | 'archive'; label: string; shortLabel: string; icon: React.ReactNode }[] = [
     { id: 'story', label: 'KISAH MISTERI', shortLabel: 'Kisah', icon: <BookOpen className="w-4 h-4" /> },
     { id: 'battle', label: 'ARENA BERTARUNG', shortLabel: 'Arena', icon: <Swords className="w-4 h-4" /> },
     { id: 'explorer', label: 'EKSPLORASI KORIDOR', shortLabel: 'Jelajah', icon: <Compass className="w-4 h-4" /> },
-    { id: 'altar', label: 'ALTAR PEMANGGILAN ROH', shortLabel: 'Altar', icon: <Sparkles className="w-4 h-4" /> },
+    { id: 'gacha', label: 'GACHA RITUAL', shortLabel: 'Gacha', icon: <Sparkles className="w-4 h-4" /> },
+    { id: 'upgrade', label: 'UPGRADE ROH', shortLabel: 'Upgrade', icon: <Flame className="w-4 h-4" /> },
     { id: 'archive', label: 'ARSIP 1998', shortLabel: 'Arsip', icon: <FolderLock className="w-4 h-4" /> }
   ];
 
@@ -197,7 +198,7 @@ export const NavigationHeader: React.FC<NavigationHeaderProps> = ({
 
       {/* Mobile Bottom Thumb Navigation Bar (Only visible on mobile screens) */}
       <div className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-[#0A0A0A]/95 border-t-2 border-[#FF0033] backdrop-blur-md shadow-[0_-5px_20px_rgba(0,0,0,0.8)] pb-safe">
-        <nav className="grid grid-cols-5 h-14 items-center">
+        <nav className="grid grid-cols-6 h-14 items-center">
           {navItems.map(item => {
             const isActive = currentTab === item.id;
             return (

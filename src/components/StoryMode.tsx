@@ -28,6 +28,7 @@ interface StoryModeProps {
   onClueDiscovered: (clueId: string) => void;
   postWinStoryNodeId?: string | null;
   onClearPostWinStoryNodeId?: () => void;
+  playerLevel?: number;
 }
 
 export const StoryMode: React.FC<StoryModeProps> = ({
@@ -35,7 +36,8 @@ export const StoryMode: React.FC<StoryModeProps> = ({
   unlockedChapterId,
   onClueDiscovered,
   postWinStoryNodeId,
-  onClearPostWinStoryNodeId
+  onClearPostWinStoryNodeId,
+  playerLevel = 1
 }) => {
   const [activeChapterId, setActiveChapterId] = useState<string>('chap_0');
   const [currentNodeId, setCurrentNodeId] = useState<string>('node_p_01');
@@ -590,23 +592,48 @@ export const StoryMode: React.FC<StoryModeProps> = ({
                 <ChevronRight className="w-5 h-5 transform skew-x-[12deg]" />
               </div>
             </button>
-          ) : currentNode.triggerBattleEnemyId ? (
-            <button
-              onClick={() => {
-                const enemy = ALL_ENEMIES[currentNode.triggerBattleEnemyId!];
-                if (enemy) onTriggerBattle(enemy, currentNode.autoNext || currentNode.choices?.[0]?.nextNodeId);
-              }}
-              className="relative transform -rotate-2 cursor-pointer animate-pulse"
-            >
-              <div className="absolute -inset-1.5 bg-yellow-300 skew-x-[-12deg]" />
-              <div className="relative bg-[#FF0033] text-black font-bebas text-xl px-7 py-2.5 skew-x-[-12deg] border-2 border-black font-black flex items-center gap-2 shadow-2xl">
-                <Swords className="w-5 h-5 transform skew-x-[12deg]" />
-                <span className="block transform skew-x-[12deg] italic uppercase tracking-wider">
-                  MULAI PERTARUNGAN GHAIB!
-                </span>
-              </div>
-            </button>
-          ) : (
+          ) : currentNode.triggerBattleEnemyId ? (() => {
+            const enemy = ALL_ENEMIES[currentNode.triggerBattleEnemyId!];
+            const isLevelGated = enemy && enemy.minPlayerLevel && playerLevel < enemy.minPlayerLevel;
+
+            if (isLevelGated) {
+              return (
+                <div className="flex flex-col items-center gap-2 bg-red-950/90 border-2 border-red-500 rounded-xl p-4 shadow-2xl max-w-lg">
+                  <div className="flex items-center gap-2 text-red-400 font-bebas text-xl">
+                    <ShieldAlert className="w-5 h-5 text-red-500 animate-bounce" />
+                    <span>BATASAN LEVEL BELUM TERCAPAI!</span>
+                  </div>
+                  <p className="text-xs font-mono text-neutral-300 text-center leading-relaxed">
+                    Roh Boss <span className="text-yellow-400 font-bold">{enemy?.name}</span> memancarkan aura kutukan yang terlalu pekat! Diperlukan minimal <span className="text-red-400 font-bold">Level {enemy?.minPlayerLevel}</span> untuk menantang pertarungan ini.
+                  </p>
+                  <div className="flex items-center gap-3 text-xs font-mono bg-black/60 px-3 py-1.5 rounded border border-red-900/60">
+                    <span className="text-neutral-400">Level Anda Saat Ini: <strong className="text-white">LV.{playerLevel}</strong></span>
+                    <span className="text-red-400 font-bold">Syarat Minimal: LV.{enemy?.minPlayerLevel}</span>
+                  </div>
+                  <p className="text-[11px] font-mono text-neutral-400 italic text-center">
+                    Tingkatkan level di Arena Bertarung atau kuatkan Roh di Kuil Penguatan terlebih dahulu.
+                  </p>
+                </div>
+              );
+            }
+
+            return (
+              <button
+                onClick={() => {
+                  if (enemy) onTriggerBattle(enemy, currentNode.autoNext || currentNode.choices?.[0]?.nextNodeId);
+                }}
+                className="relative transform -rotate-2 cursor-pointer animate-pulse"
+              >
+                <div className="absolute -inset-1.5 bg-yellow-300 skew-x-[-12deg]" />
+                <div className="relative bg-[#FF0033] text-black font-bebas text-xl px-7 py-2.5 skew-x-[-12deg] border-2 border-black font-black flex items-center gap-2 shadow-2xl">
+                  <Swords className="w-5 h-5 transform skew-x-[12deg]" />
+                  <span className="block transform skew-x-[12deg] italic uppercase tracking-wider">
+                    MULAI PERTARUNGAN GHAIB!
+                  </span>
+                </div>
+              </button>
+            );
+          })() : (
             <div className="flex gap-2">
               <button
                 onClick={() => setViewMode('season2_preview')}

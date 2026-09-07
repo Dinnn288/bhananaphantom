@@ -88,6 +88,34 @@ class AudioManager {
     }
   }
 
+  // Hit Impact (shorthand for slash/blunt impact)
+  public playHit() {
+    this.playSlash();
+  }
+
+  // Weakness Trigger or Warning tone
+  public playWeakness() {
+    if (this.isMuted) return;
+    try {
+      this.initCtx();
+      if (!this.ctx) return;
+      const t = this.ctx.currentTime;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(260, t);
+      osc.frequency.exponentialRampToValueAtTime(120, t + 0.18);
+      gain.gain.setValueAtTime(0.2, t);
+      gain.gain.exponentialRampToValueAtTime(0.01, t + 0.18);
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      osc.start(t);
+      osc.stop(t + 0.18);
+    } catch {
+      // Ignored
+    }
+  }
+
   // Weakness Hit / Critical Strike (Heavy Punchy Impact)
   public playCritical() {
     if (this.isMuted) return;

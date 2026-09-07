@@ -86,6 +86,7 @@ export interface EnemyGhost {
   repels?: ElementType[];
   isDown: boolean;
   isBoss?: boolean;
+  minPlayerLevel?: number; // Batasan level pemain minimal untuk melawan boss
   lore: string;
   secretHint: string;
   themeColor: string;
@@ -153,6 +154,7 @@ export interface SavedGameProfile {
   id: string;
   slotNumber: number;
   playerName: string;
+  name?: string;
   leadHeroId: string;
   playerLevel: number;
   playerExp: number;
