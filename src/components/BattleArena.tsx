@@ -763,7 +763,7 @@ export const BattleArena: React.FC<BattleArenaProps> = ({
   };
 
   return (
-    <div className="relative w-full h-[640px] bg-[#0A0A0A] border-4 border-[#FF0033] rounded-xl overflow-hidden flex flex-col justify-between shadow-2xl select-none artistic-radial-bg">
+    <div className="relative w-full min-h-[520px] sm:min-h-[600px] max-h-[92vh] md:max-h-none bg-[#0A0A0A] border-2 sm:border-4 border-[#FF0033] rounded-xl overflow-hidden flex flex-col justify-between shadow-2xl select-none artistic-radial-bg">
       {/* Background with repeating red angled pattern and subtle glow */}
       <div className="absolute inset-0 artistic-pattern opacity-15 pointer-events-none z-0" />
       <div className="absolute inset-0 bg-halftone pointer-events-none opacity-25 z-0" />
@@ -861,22 +861,22 @@ export const BattleArena: React.FC<BattleArenaProps> = ({
       )}
 
       {/* TOP: ENEMY ROW */}
-      <div className="relative z-10 pt-4 px-6">
-        <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
-          <div className="flex items-center gap-3">
-            <span className="bg-[#FF0033] text-black font-black px-3 py-0.5 text-xs tracking-wider skew-x-[-12deg] uppercase italic">
+      <div className="relative z-10 pt-2 sm:pt-4 px-2 sm:px-6">
+        <div className="flex items-center justify-between mb-2 flex-wrap gap-1.5 sm:gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-3 flex-wrap">
+            <span className="bg-[#FF0033] text-black font-black px-2 sm:px-3 py-0.5 text-[10px] sm:text-xs tracking-wider skew-x-[-12deg] uppercase italic">
               GHOST TARGET
             </span>
 
             {/* Arena Difficulty Selector Bar */}
-            <div className="flex items-center gap-1 bg-black/80 px-2 py-0.5 border border-neutral-700 skew-x-[-8deg]">
-              <span className="text-[10px] font-mono text-neutral-400 font-bold uppercase transform skew-x-[8deg] flex items-center gap-1">
+            <div className="flex items-center gap-0.5 sm:gap-1 bg-black/80 px-1.5 sm:px-2 py-0.5 border border-neutral-700 skew-x-[-8deg]">
+              <span className="text-[9px] sm:text-[10px] font-mono text-neutral-400 font-bold uppercase transform skew-x-[8deg] flex items-center gap-1">
                 <AlertTriangle className="w-3 h-3 text-[#FF0033]" /> ARENA:
               </span>
               <button
                 type="button"
                 onClick={() => handleDifficultyChange('standar')}
-                className={`text-[10px] font-mono font-black px-2 py-0.5 transform skew-x-[8deg] transition-all cursor-pointer ${
+                className={`text-[9px] sm:text-[10px] font-mono font-black px-1.5 sm:px-2 py-0.5 transform skew-x-[8deg] transition-all cursor-pointer ${
                   difficulty === 'standar' ? 'bg-white text-black' : 'text-neutral-400 hover:text-white'
                 }`}
                 title="Tingkat musuh normal"
@@ -886,22 +886,22 @@ export const BattleArena: React.FC<BattleArenaProps> = ({
               <button
                 type="button"
                 onClick={() => handleDifficultyChange('siksaan')}
-                className={`text-[10px] font-mono font-black px-2 py-0.5 transform skew-x-[8deg] transition-all cursor-pointer ${
+                className={`text-[9px] sm:text-[10px] font-mono font-black px-1.5 sm:px-2 py-0.5 transform skew-x-[8deg] transition-all cursor-pointer ${
                   difficulty === 'siksaan' ? 'bg-[#FF0033] text-white shadow-md' : 'text-neutral-400 hover:text-white'
                 }`}
                 title="Musuh +30% ATK, kabut menyerap 5 SP, EXP x1.5"
               >
-                SIKSAAN (+30% DMG)
+                SIKSAAN
               </button>
               <button
                 type="button"
                 onClick={() => handleDifficultyChange('gerhana')}
-                className={`text-[10px] font-mono font-black px-2 py-0.5 transform skew-x-[8deg] transition-all cursor-pointer ${
+                className={`text-[9px] sm:text-[10px] font-mono font-black px-1.5 sm:px-2 py-0.5 transform skew-x-[8deg] transition-all cursor-pointer ${
                   difficulty === 'gerhana' ? 'bg-purple-600 text-white animate-pulse shadow-lg' : 'text-neutral-400 hover:text-purple-300'
                 }`}
                 title="Musuh +60% ATK, bos serang 2x, resistensi non-weak, EXP x2.2"
               >
-                GERHANA (NIGHTMARE)
+                GERHANA
               </button>
             </div>
           </div>
@@ -909,15 +909,15 @@ export const BattleArena: React.FC<BattleArenaProps> = ({
           {onEscape && (
             <button
               onClick={onEscape}
-              className="text-xs text-neutral-300 hover:text-white px-3 py-1 bg-[#141418] border border-neutral-700 hover:border-[#FF0033] skew-x-[-10deg] font-mono cursor-pointer"
+              className="text-[10px] sm:text-xs text-neutral-300 hover:text-white px-2.5 sm:px-3 py-1 bg-[#141418] border border-neutral-700 hover:border-[#FF0033] skew-x-[-10deg] font-mono cursor-pointer"
             >
-              <span className="block transform skew-x-[10deg]">KABUR DARI KORIDOR</span>
+              <span className="block transform skew-x-[10deg]">KABUR</span>
             </button>
           )}
         </div>
 
         {/* Enemies list */}
-        <div className="flex items-center justify-center gap-4 flex-wrap relative">
+        <div className="flex items-center justify-center gap-2 sm:gap-4 flex-wrap relative">
           {/* Cinematic Enemy Attack Overlay */}
           {enemyAttackVfx && (
             <div className="absolute inset-0 z-35 flex flex-col items-center justify-center pointer-events-none animate-shake">
@@ -983,7 +983,7 @@ export const BattleArena: React.FC<BattleArenaProps> = ({
                     )}
                   </div>
                 )}
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 sm:gap-3">
                   <EnemyAvatar
                     type={enemy.avatarType}
                     isDown={enemy.isDown}
@@ -992,19 +992,19 @@ export const BattleArena: React.FC<BattleArenaProps> = ({
                     size="md"
                   />
 
-                  <div className="w-40 sm:w-48 text-left">
+                  <div className="w-32 sm:w-44 md:w-48 text-left">
                     <div className="flex items-center justify-between">
-                      <span className="font-bebas text-base text-white font-bold tracking-wide truncate">
+                      <span className="font-bebas text-sm sm:text-base text-white font-bold tracking-wide truncate">
                         {enemy.name}
                       </span>
                       <div className="flex items-center gap-1">
                         {isRaging && (
-                          <span className="bg-red-600 text-white text-[9px] px-1 font-black rounded animate-pulse">
+                          <span className="bg-red-600 text-white text-[8px] sm:text-[9px] px-1 font-black rounded animate-pulse">
                             RAGE!
                           </span>
                         )}
                         {enemy.isBoss && (
-                          <span className="bg-[#FF0033] text-black text-[10px] px-1.5 font-black rounded skew-x-[-8deg]">
+                          <span className="bg-[#FF0033] text-black text-[9px] sm:text-[10px] px-1 font-black rounded skew-x-[-8deg]">
                             BOSS
                           </span>
                         )}
@@ -1012,21 +1012,21 @@ export const BattleArena: React.FC<BattleArenaProps> = ({
                     </div>
 
                     {/* HP Bar */}
-                    <div className="w-full bg-neutral-900 h-2.5 rounded-full border border-neutral-700 overflow-hidden my-1">
+                    <div className="w-full bg-neutral-900 h-2 sm:h-2.5 rounded-full border border-neutral-700 overflow-hidden my-0.5 sm:my-1">
                       <div
                         className="h-full bg-[#FF0033] transition-all duration-300"
                         style={{ width: `${Math.max(0, (enemy.hp / enemy.maxHp) * 100)}%` }}
                       />
                     </div>
 
-                    <div className="text-[11px] font-mono text-neutral-400 flex justify-between">
+                    <div className="text-[10px] sm:text-[11px] font-mono text-neutral-400 flex justify-between">
                       <span>HP: {enemy.hp}/{enemy.maxHp}</span>
                       {enemy.isDown && <span className="text-[#FF0033] font-black italic">DOWN</span>}
                     </div>
 
                     {/* Weaknesses tags */}
-                    <div className="flex items-center gap-1 mt-1 flex-wrap">
-                      <span className="text-[10px] text-neutral-400 font-bold uppercase">WEAK:</span>
+                    <div className="flex items-center gap-1 mt-0.5 sm:mt-1 flex-wrap">
+                      <span className="text-[9px] sm:text-[10px] text-neutral-400 font-bold uppercase">WEAK:</span>
                       {enemy.weaknesses.map(w => (
                         <ElementBadge key={w} element={w} size="sm" showName={false} />
                       ))}
@@ -1064,9 +1064,9 @@ export const BattleArena: React.FC<BattleArenaProps> = ({
       </div>
 
       {/* BOTTOM: PARTY HUD & P5 COMMAND WHEEL (Artistic Flair Layout) */}
-      <div className="relative z-10 bg-[#0A0A0A]/95 border-t-4 border-[#FF0033] px-6 py-3 flex flex-col md:flex-row items-center justify-between gap-4 backdrop-blur-md">
+      <div className="relative z-10 bg-[#0A0A0A]/95 border-t-4 border-[#FF0033] px-3 sm:px-6 py-2.5 sm:py-3 flex flex-col md:flex-row items-center justify-between gap-3 sm:gap-4 backdrop-blur-md">
         {/* Heroes Status Cards */}
-        <div className="flex items-center gap-3 w-full md:w-auto overflow-x-auto pb-1">
+        <div className="flex items-center gap-2 sm:gap-3 w-full md:w-auto overflow-x-auto pb-1 scrollbar-thin">
           {heroes.map((hero, idx) => {
             const isActive = activeHeroIndex === idx && !isEnemyTurn;
             const isFainted = hero.hp <= 0;
@@ -1074,33 +1074,33 @@ export const BattleArena: React.FC<BattleArenaProps> = ({
             return (
               <div
                 key={hero.id}
-                className={`relative transition-all p-2.5 rounded-lg border-2 min-w-[175px] ${
+                className={`relative transition-all p-2 sm:p-2.5 rounded-lg border-2 min-w-[125px] sm:min-w-[160px] md:min-w-[175px] shrink-0 ${
                   isFainted
                     ? 'border-neutral-800 bg-[#0D0D11]/60 opacity-40'
                     : isActive
-                    ? 'border-[#FF0033] border-r-8 bg-[#151116] p5-shadow-red -translate-y-1'
+                    ? 'border-[#FF0033] border-r-4 sm:border-r-8 bg-[#151116] p5-shadow-red -translate-y-0.5 sm:-translate-y-1 ring-1 ring-[#FF0033]'
                     : 'border-neutral-800 bg-[#121217]'
                 }`}
               >
-                <div className="flex items-center gap-2 mb-1">
+                <div className="flex items-center gap-1.5 sm:gap-2 mb-1">
                   <AnimePortrait characterId={hero.id} emotion={hero.isDown ? 'fear' : 'determined'} size="sm" />
                   <div className="overflow-hidden">
-                    <div className="font-bebas text-base font-bold text-white tracking-wide truncate">
+                    <div className="font-bebas text-sm sm:text-base font-bold text-white tracking-wide truncate">
                       {hero.name.split(' ')[0]}
                     </div>
-                    <div className="text-[10px] text-neutral-400 font-mono tracking-wider uppercase">
+                    <div className="text-[9px] sm:text-[10px] text-neutral-400 font-mono tracking-wider uppercase truncate">
                       {hero.alias}
                     </div>
                   </div>
                 </div>
 
                 {/* HP & SP */}
-                <div className="space-y-1 text-[11px] font-mono">
+                <div className="space-y-0.5 sm:space-y-1 text-[10px] sm:text-[11px] font-mono">
                   <div className="flex items-center justify-between text-[#FF0033] font-bold">
                     <span>HP</span>
                     <span>{hero.hp}/{hero.maxHp}</span>
                   </div>
-                  <div className="w-full bg-neutral-900 h-1.5 rounded-full overflow-hidden border border-neutral-800">
+                  <div className="w-full bg-neutral-900 h-1 sm:h-1.5 rounded-full overflow-hidden border border-neutral-800">
                     <div
                       className="bg-[#FF0033] h-full transition-all"
                       style={{ width: `${(hero.hp / hero.maxHp) * 100}%` }}
@@ -1108,10 +1108,10 @@ export const BattleArena: React.FC<BattleArenaProps> = ({
                   </div>
 
                   <div className="flex items-center justify-between text-blue-400 font-bold">
-                    <span>SOUL SYNC</span>
+                    <span>SOUL</span>
                     <span>{hero.sp}/{hero.maxSp}</span>
                   </div>
-                  <div className="w-full bg-neutral-900 h-1.5 rounded-full overflow-hidden border border-neutral-800">
+                  <div className="w-full bg-neutral-900 h-1 sm:h-1.5 rounded-full overflow-hidden border border-neutral-800">
                     <div
                       className="bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.5)] h-full transition-all"
                       style={{ width: `${(hero.sp / hero.maxSp) * 100}%` }}
@@ -1119,7 +1119,7 @@ export const BattleArena: React.FC<BattleArenaProps> = ({
                   </div>
 
                   {/* Highlight Gauge */}
-                  <div className="flex items-center justify-between text-yellow-400 text-[10px] font-bold">
+                  <div className="flex items-center justify-between text-yellow-400 text-[9px] sm:text-[10px] font-bold">
                     <span>SHOWTIME</span>
                     <span>{hero.highlightGauge}%</span>
                   </div>
@@ -1135,134 +1135,221 @@ export const BattleArena: React.FC<BattleArenaProps> = ({
           })}
         </div>
 
-        {/* Dynamic Persona 5 Style Command Wheel (Artistic Flair Themed) */}
+        {/* Dynamic Command Area */}
         <div className="w-full md:w-auto flex-1 max-w-lg">
           {menuMode === 'main' ? (
-            <div className="flex flex-wrap items-center justify-center md:justify-end gap-3">
-              {/* Artistic Flair Primary Attack Button */}
-              <button
-                disabled={isEnemyTurn}
-                onClick={handlePhysicalAttack}
-                className="relative transform -rotate-3 group cursor-pointer disabled:opacity-40"
-              >
-                <div className="absolute -inset-1.5 bg-white skew-x-[-12deg] transition-all group-hover:scale-105" />
-                <div className="relative bg-[#FF0033] px-5 py-2 skew-x-[-12deg] shadow-2xl border border-black">
-                  <span className="block transform skew-x-[12deg] text-lg font-black text-white italic tracking-tighter flex items-center gap-1.5">
+            <div>
+              {/* MOBILE DEDICATED THUMB CONTROLS (Easily reachable on phone screens) */}
+              <div className="md:hidden w-full space-y-2">
+                {/* Showtime Banner on Mobile when 100% */}
+                {activeHero.highlightGauge >= 100 && (
+                  <button
+                    disabled={isEnemyTurn}
+                    onClick={handleShowtime}
+                    className="w-full bg-[#FF0033] hover:bg-red-600 text-yellow-300 border-2 border-yellow-300 font-bebas text-lg sm:text-xl py-2 rounded-lg font-black tracking-widest animate-pulse shadow-lg flex items-center justify-center gap-2 cursor-pointer disabled:opacity-40"
+                  >
+                    <Sparkles className="w-5 h-5 text-yellow-300" />
+                    <span>★ AKTIFKAN SHOWTIME! ★</span>
+                  </button>
+                )}
+
+                {/* 3x2 Thumb Grid */}
+                <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
+                  {/* Attack */}
+                  <button
+                    disabled={isEnemyTurn}
+                    onClick={handlePhysicalAttack}
+                    className="bg-[#FF0033] hover:bg-red-600 active:scale-95 text-white font-bebas text-base sm:text-lg font-black py-2.5 px-2 rounded border-2 border-white shadow flex flex-col items-center justify-center cursor-pointer disabled:opacity-40"
+                  >
                     <Sword className="w-4 h-4" />
-                    <span>ATTACK</span>
-                  </span>
-                </div>
-              </button>
+                    <span>SERANG</span>
+                  </button>
 
-              {/* Artistic Flair Persona / Spirit Skills Button */}
-              <button
-                disabled={isEnemyTurn}
-                onClick={() => setMenuMode('skills')}
-                className="relative transform rotate-2 cursor-pointer group disabled:opacity-40"
-              >
-                <div className="absolute -inset-1 bg-white skew-x-[-10deg] opacity-80 group-hover:opacity-100 transition-all" />
-                <div className="relative bg-[#111] border-2 border-white px-4 py-2 skew-x-[-10deg]">
-                  <span className="block transform skew-x-[10deg] text-base font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
+                  {/* Skill */}
+                  <button
+                    disabled={isEnemyTurn}
+                    onClick={() => setMenuMode('skills')}
+                    className="bg-[#141418] hover:bg-[#202028] active:scale-95 text-white font-bebas text-base sm:text-lg font-bold py-2.5 px-2 rounded border-2 border-[#FF0033] shadow flex flex-col items-center justify-center cursor-pointer disabled:opacity-40"
+                  >
                     <Flame className="w-4 h-4 text-[#FF0033]" />
-                    <span>{activeSpirit?.name.split(' ')[0] || 'SKILL'}</span>
-                  </span>
-                </div>
-              </button>
+                    <span className="truncate max-w-[80px]">JURUS</span>
+                  </button>
 
-              {/* Gun / Jimat Peluru */}
-              <button
-                disabled={isEnemyTurn || activeHero.gunBullets <= 0}
-                onClick={handleGunAttack}
-                className="relative transform -rotate-1 cursor-pointer disabled:opacity-40"
-              >
-                <div className="bg-[#141418] border border-neutral-700 hover:border-[#FF0033] px-3.5 py-2 skew-x-[8deg]">
-                  <span className="block transform skew-x-[-8deg] text-sm font-bold text-neutral-300 uppercase tracking-widest flex items-center gap-1.5">
+                  {/* Jimat Peluru */}
+                  <button
+                    disabled={isEnemyTurn || activeHero.gunBullets <= 0}
+                    onClick={handleGunAttack}
+                    className="bg-[#141418] hover:bg-[#202028] active:scale-95 text-blue-300 font-mono text-xs font-bold py-2.5 px-1 rounded border border-neutral-700 flex flex-col items-center justify-center cursor-pointer disabled:opacity-40"
+                  >
                     <Crosshair className="w-4 h-4 text-blue-400" />
                     <span>JIMAT ({activeHero.gunBullets})</span>
-                  </span>
-                </div>
-              </button>
+                  </button>
 
-              {/* Guard */}
-              <button
-                disabled={isEnemyTurn}
-                onClick={handleGuard}
-                className="relative transform rotate-3 cursor-pointer disabled:opacity-40"
-              >
-                <div className="bg-[#141418] border border-neutral-700 hover:border-[#FF0033] px-3.5 py-2 skew-x-[-10deg]">
-                  <span className="block transform skew-x-[10deg] text-sm font-bold text-neutral-300 uppercase tracking-widest flex items-center gap-1">
+                  {/* Guard */}
+                  <button
+                    disabled={isEnemyTurn}
+                    onClick={handleGuard}
+                    className="bg-[#141418] hover:bg-[#202028] active:scale-95 text-neutral-300 font-mono text-xs font-bold py-2 px-1 rounded border border-neutral-700 flex flex-col items-center justify-center cursor-pointer disabled:opacity-40"
+                  >
                     <Shield className="w-4 h-4 text-neutral-400" />
                     <span>GUARD</span>
-                  </span>
-                </div>
-              </button>
+                  </button>
 
-              {/* Spirit Shift (Ganti Roh) */}
-              <button
-                disabled={isEnemyTurn}
-                onClick={() => setMenuMode('spirits')}
-                className="relative transform -rotate-1 cursor-pointer group disabled:opacity-40"
-                title="Ganti Roh Pendamping (Persona Shift)"
-              >
-                <div className="bg-[#18121f] border-2 border-purple-500 hover:border-white px-3.5 py-2 skew-x-[-8deg] shadow-lg transition-colors">
-                  <span className="block transform skew-x-[8deg] text-sm font-bold text-purple-300 group-hover:text-white uppercase tracking-wider flex items-center gap-1.5 font-mono">
-                    <RefreshCw className="w-3.5 h-3.5 text-purple-400 animate-spin-slow" />
+                  {/* Spirit Shift */}
+                  <button
+                    disabled={isEnemyTurn}
+                    onClick={() => setMenuMode('spirits')}
+                    className="bg-[#1b1224] hover:bg-[#281938] active:scale-95 text-purple-300 font-mono text-xs font-bold py-2 px-1 rounded border border-purple-500 flex flex-col items-center justify-center cursor-pointer disabled:opacity-40"
+                  >
+                    <RefreshCw className="w-4 h-4 text-purple-400 animate-spin-slow" />
                     <span>GANTI ROH</span>
-                  </span>
-                </div>
-              </button>
+                  </button>
 
-              {/* SHOWTIME / HIGHLIGHT BUTTON */}
-              {activeHero.highlightGauge >= 100 && (
+                  {/* Baton Pass (or First Ally switch) */}
+                  {(() => {
+                    const batonTarget = heroes.find((h, idx) => idx !== activeHeroIndex && h.hp > 0);
+                    const targetIdx = batonTarget ? heroes.findIndex(h => h.id === batonTarget.id) : -1;
+                    return (
+                      <button
+                        disabled={isEnemyTurn || !batonTarget}
+                        onClick={() => targetIdx !== -1 && handleBatonPass(targetIdx)}
+                        className="bg-[#1A1A22] hover:bg-[#FF0033] hover:text-black active:scale-95 text-white font-mono text-[10px] font-bold py-2 px-1 rounded border border-neutral-600 flex flex-col items-center justify-center cursor-pointer disabled:opacity-40"
+                      >
+                        <span className="text-yellow-400 font-black">BATON</span>
+                        <span className="truncate max-w-[70px]">{batonTarget ? batonTarget.name.split(' ')[0] : '-'}</span>
+                      </button>
+                    );
+                  })()}
+                </div>
+              </div>
+
+              {/* DESKTOP PERSONA 5 WHEEL (Visible on md+ screens) */}
+              <div className="hidden md:flex flex-wrap items-center justify-end gap-3">
+                {/* Artistic Flair Primary Attack Button */}
                 <button
                   disabled={isEnemyTurn}
-                  onClick={handleShowtime}
-                  className="relative transform -rotate-2 cursor-pointer animate-pulse"
+                  onClick={handlePhysicalAttack}
+                  className="relative transform -rotate-3 group cursor-pointer disabled:opacity-40"
                 >
-                  <div className="absolute -inset-1 bg-yellow-300 skew-x-[-12deg]" />
-                  <div className="relative bg-[#FF0033] border-2 border-yellow-300 px-4 py-2 skew-x-[-12deg]">
-                    <span className="block transform skew-x-[12deg] text-base font-black text-yellow-300 italic tracking-wider flex items-center gap-1">
-                      <Sparkles className="w-4 h-4" />
-                      <span>SHOWTIME!</span>
+                  <div className="absolute -inset-1.5 bg-white skew-x-[-12deg] transition-all group-hover:scale-105" />
+                  <div className="relative bg-[#FF0033] px-5 py-2 skew-x-[-12deg] shadow-2xl border border-black">
+                    <span className="block transform skew-x-[12deg] text-lg font-black text-white italic tracking-tighter flex items-center gap-1.5">
+                      <Sword className="w-4 h-4" />
+                      <span>ATTACK</span>
                     </span>
                   </div>
                 </button>
-              )}
 
-              {/* Baton Pass */}
-              <div className="flex items-center gap-1">
-                {heroes.map((h, idx) => {
-                  if (idx === activeHeroIndex || h.hp <= 0) return null;
-                  return (
-                    <button
-                      key={h.id}
-                      onClick={() => handleBatonPass(idx)}
-                      className="text-[11px] font-mono font-bold px-2 py-1 bg-[#1A1A22] border border-white text-white hover:bg-[#FF0033] hover:text-black skew-x-[-10deg] cursor-pointer transition-colors"
-                      title={`Baton Pass ke ${h.name}`}
-                    >
-                      <span className="block transform skew-x-[10deg]">BATON &gt; {h.name.split(' ')[0]}</span>
-                    </button>
-                  );
-                })}
+                {/* Artistic Flair Persona / Spirit Skills Button */}
+                <button
+                  disabled={isEnemyTurn}
+                  onClick={() => setMenuMode('skills')}
+                  className="relative transform rotate-2 cursor-pointer group disabled:opacity-40"
+                >
+                  <div className="absolute -inset-1 bg-white skew-x-[-10deg] opacity-80 group-hover:opacity-100 transition-all" />
+                  <div className="relative bg-[#111] border-2 border-white px-4 py-2 skew-x-[-10deg]">
+                    <span className="block transform skew-x-[10deg] text-base font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
+                      <Flame className="w-4 h-4 text-[#FF0033]" />
+                      <span>{activeSpirit?.name.split(' ')[0] || 'SKILL'}</span>
+                    </span>
+                  </div>
+                </button>
+
+                {/* Gun / Jimat Peluru */}
+                <button
+                  disabled={isEnemyTurn || activeHero.gunBullets <= 0}
+                  onClick={handleGunAttack}
+                  className="relative transform -rotate-1 cursor-pointer disabled:opacity-40"
+                >
+                  <div className="bg-[#141418] border border-neutral-700 hover:border-[#FF0033] px-3.5 py-2 skew-x-[8deg]">
+                    <span className="block transform skew-x-[-8deg] text-sm font-bold text-neutral-300 uppercase tracking-widest flex items-center gap-1.5">
+                      <Crosshair className="w-4 h-4 text-blue-400" />
+                      <span>JIMAT ({activeHero.gunBullets})</span>
+                    </span>
+                  </div>
+                </button>
+
+                {/* Guard */}
+                <button
+                  disabled={isEnemyTurn}
+                  onClick={handleGuard}
+                  className="relative transform rotate-3 cursor-pointer disabled:opacity-40"
+                >
+                  <div className="bg-[#141418] border border-neutral-700 hover:border-[#FF0033] px-3.5 py-2 skew-x-[-10deg]">
+                    <span className="block transform skew-x-[10deg] text-sm font-bold text-neutral-300 uppercase tracking-widest flex items-center gap-1">
+                      <Shield className="w-4 h-4 text-neutral-400" />
+                      <span>GUARD</span>
+                    </span>
+                  </div>
+                </button>
+
+                {/* Spirit Shift (Ganti Roh) */}
+                <button
+                  disabled={isEnemyTurn}
+                  onClick={() => setMenuMode('spirits')}
+                  className="relative transform -rotate-1 cursor-pointer group disabled:opacity-40"
+                  title="Ganti Roh Pendamping (Persona Shift)"
+                >
+                  <div className="bg-[#18121f] border-2 border-purple-500 hover:border-white px-3.5 py-2 skew-x-[-8deg] shadow-lg transition-colors">
+                    <span className="block transform skew-x-[8deg] text-sm font-bold text-purple-300 group-hover:text-white uppercase tracking-wider flex items-center gap-1.5 font-mono">
+                      <RefreshCw className="w-3.5 h-3.5 text-purple-400 animate-spin-slow" />
+                      <span>GANTI ROH</span>
+                    </span>
+                  </div>
+                </button>
+
+                {/* SHOWTIME / HIGHLIGHT BUTTON */}
+                {activeHero.highlightGauge >= 100 && (
+                  <button
+                    disabled={isEnemyTurn}
+                    onClick={handleShowtime}
+                    className="relative transform -rotate-2 cursor-pointer animate-pulse"
+                  >
+                    <div className="absolute -inset-1 bg-yellow-300 skew-x-[-12deg]" />
+                    <div className="relative bg-[#FF0033] border-2 border-yellow-300 px-4 py-2 skew-x-[-12deg]">
+                      <span className="block transform skew-x-[12deg] text-base font-black text-yellow-300 italic tracking-wider flex items-center gap-1">
+                        <Sparkles className="w-4 h-4" />
+                        <span>SHOWTIME!</span>
+                      </span>
+                    </div>
+                  </button>
+                )}
+
+                {/* Baton Pass */}
+                <div className="flex items-center gap-1">
+                  {heroes.map((h, idx) => {
+                    if (idx === activeHeroIndex || h.hp <= 0) return null;
+                    return (
+                      <button
+                        key={h.id}
+                        onClick={() => handleBatonPass(idx)}
+                        className="text-[11px] font-mono font-bold px-2 py-1 bg-[#1A1A22] border border-white text-white hover:bg-[#FF0033] hover:text-black skew-x-[-10deg] cursor-pointer transition-colors"
+                        title={`Baton Pass ke ${h.name}`}
+                      >
+                        <span className="block transform skew-x-[10deg]">BATON &gt; {h.name.split(' ')[0]}</span>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
             </div>
           ) : menuMode === 'skills' ? (
             /* Sub-Menu: Spirit Skills Selection (Artistic Flair Themed) */
-            <div className="bg-[#121217] border-2 border-[#FF0033] rounded-lg p-3 relative">
+            <div className="bg-[#121217] border-2 border-[#FF0033] rounded-lg p-2.5 sm:p-3 relative shadow-2xl">
               <div className="flex items-center justify-between mb-2">
-                <span className="font-bebas text-base text-[#FF0033] tracking-wider flex items-center gap-1.5 font-bold">
-                  <Flame className="w-4 h-4 text-[#FF0033]" />
-                  JURUS ROH PENDAMPING: {activeSpirit?.name}
+                <span className="font-bebas text-sm sm:text-base text-[#FF0033] tracking-wider flex items-center gap-1.5 font-bold truncate">
+                  <Flame className="w-4 h-4 text-[#FF0033] shrink-0" />
+                  <span>JURUS: {activeSpirit?.name}</span>
                 </span>
                 <button
                   onClick={() => setMenuMode('main')}
-                  className="text-xs text-neutral-300 hover:text-white font-mono px-2.5 py-1 bg-[#1A1A22] border border-neutral-700 skew-x-[-8deg] cursor-pointer"
+                  className="text-xs text-neutral-200 hover:text-white font-mono px-3 py-1.5 bg-[#FF0033] text-black font-black border border-white rounded skew-x-[-8deg] cursor-pointer shrink-0"
                 >
                   <span className="block transform skew-x-[8deg]">&larr; KEMBALI</span>
                 </button>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-36 overflow-y-auto">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 sm:gap-2 max-h-48 sm:max-h-56 overflow-y-auto pr-1">
                 {activeSpirit?.skills.map(skill => {
                   const cannotAfford =
                     (skill.spCost > 0 && activeHero.sp < skill.spCost) ||
@@ -1276,16 +1363,16 @@ export const BattleArena: React.FC<BattleArenaProps> = ({
                       className={`text-left p-2 rounded border transition-all cursor-pointer ${
                         cannotAfford
                           ? 'border-neutral-800 bg-neutral-950/60 opacity-40 cursor-not-allowed'
-                          : 'border-neutral-700 bg-black/80 hover:border-[#FF0033] hover:bg-[#1A0B0F]'
+                          : 'border-neutral-700 bg-black/80 hover:border-[#FF0033] hover:bg-[#1A0B0F] active:scale-95'
                       }`}
                     >
                       <div className="flex items-center justify-between">
-                        <span className="font-bebas text-base text-white tracking-wide truncate">
+                        <span className="font-bebas text-sm sm:text-base text-white tracking-wide truncate">
                           {skill.name}
                         </span>
                         <ElementBadge element={skill.element} size="sm" showName={false} />
                       </div>
-                      <div className="flex items-center justify-between text-[11px] font-mono mt-0.5 text-neutral-400">
+                      <div className="flex items-center justify-between text-[10px] sm:text-[11px] font-mono mt-0.5 text-neutral-400">
                         <span>Pwr: {skill.power}</span>
                         <span className={skill.spCost > 0 ? 'text-blue-400 font-bold' : 'text-[#FF0033] font-bold'}>
                           {skill.spCost > 0 ? `${skill.spCost} SP` : `${skill.hpCost} HP`}
@@ -1298,21 +1385,21 @@ export const BattleArena: React.FC<BattleArenaProps> = ({
             </div>
           ) : (
             /* Sub-Menu: Spirit Shift Selection */
-            <div className="bg-[#121217] border-2 border-purple-500 rounded-lg p-3 relative">
+            <div className="bg-[#121217] border-2 border-purple-500 rounded-lg p-2.5 sm:p-3 relative shadow-2xl">
               <div className="flex items-center justify-between mb-2">
-                <span className="font-bebas text-base text-purple-400 tracking-wider flex items-center gap-1.5 font-bold">
-                  <RefreshCw className="w-4 h-4 text-purple-400" />
-                  PERGANTIAN ROH (PERSONA SHIFT): {activeHero.name}
+                <span className="font-bebas text-sm sm:text-base text-purple-400 tracking-wider flex items-center gap-1.5 font-bold truncate">
+                  <RefreshCw className="w-4 h-4 text-purple-400 shrink-0" />
+                  <span>GANTI ROH: {activeHero.name}</span>
                 </span>
                 <button
                   onClick={() => setMenuMode('main')}
-                  className="text-xs text-neutral-300 hover:text-white font-mono px-2.5 py-1 bg-[#1A1A22] border border-neutral-700 skew-x-[-8deg] cursor-pointer"
+                  className="text-xs text-neutral-200 hover:text-white font-mono px-3 py-1.5 bg-purple-700 text-white font-bold border border-white rounded skew-x-[-8deg] cursor-pointer shrink-0"
                 >
                   <span className="block transform skew-x-[8deg]">&larr; BATAL</span>
                 </button>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 max-h-40 overflow-y-auto">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-1.5 sm:gap-2 max-h-48 sm:max-h-56 overflow-y-auto pr-1">
                 {Array.from(
                   new Map(
                     [...(activeHero.spirits || []), ...ownedSpirits, ...INITIAL_SPIRITS].map(s => [s.id, s])
@@ -1327,7 +1414,7 @@ export const BattleArena: React.FC<BattleArenaProps> = ({
                       className={`text-left p-2 rounded border transition-all cursor-pointer flex items-center justify-between gap-2 ${
                         isActive
                           ? 'border-green-500/80 bg-green-950/30 opacity-80 cursor-default'
-                          : 'border-purple-500/40 bg-black/80 hover:border-purple-400 hover:bg-[#1f132a]'
+                          : 'border-purple-500/40 bg-black/80 hover:border-purple-400 hover:bg-[#1f132a] active:scale-95'
                       }`}
                     >
                       <div className="flex items-center gap-2 overflow-hidden">
@@ -1346,24 +1433,21 @@ export const BattleArena: React.FC<BattleArenaProps> = ({
                           )}
                         </div>
                         <div className="truncate">
-                          <div className="font-bebas text-sm text-white truncate flex items-center gap-1.5">
+                          <div className="font-bebas text-xs sm:text-sm text-white truncate flex items-center gap-1">
                             <span className="truncate">{spirit.name}</span>
-                            <span className="text-[10px] font-mono text-neutral-400">({spirit.rarity})</span>
-                            <span className="text-[10px] font-mono text-amber-400 font-bold flex items-center">
-                              ★{spirit.awakenRank ?? 1}
-                            </span>
+                            <span className="text-[9px] font-mono text-neutral-400">({spirit.rarity})</span>
                           </div>
-                          <div className="text-[10px] font-mono text-neutral-400 truncate">
-                            +{spirit.bonusAtk} ATK | +{spirit.bonusHp} HP
+                          <div className="text-[9px] font-mono text-neutral-400 truncate">
+                            +{spirit.bonusAtk} ATK
                           </div>
                         </div>
                       </div>
                       <div className="flex flex-col items-end flex-shrink-0">
                         <ElementBadge element={spirit.element} size="sm" showName={false} />
                         {isActive ? (
-                          <span className="text-[9px] font-mono font-bold text-green-400 mt-1">AKTIF</span>
+                          <span className="text-[8px] font-mono font-bold text-green-400 mt-1">AKTIF</span>
                         ) : (
-                          <span className="text-[9px] font-mono font-bold text-purple-300 mt-1">GANTI &rarr;</span>
+                          <span className="text-[8px] font-mono font-bold text-purple-300 mt-1">PILIH</span>
                         )}
                       </div>
                     </button>

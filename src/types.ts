@@ -148,3 +148,19 @@ export interface StoryChapter {
   bossEnemyId: string;
   summary: string;
 }
+
+export interface SavedGameProfile {
+  id: string;
+  slotNumber: number;
+  playerName: string;
+  leadHeroId: string;
+  playerLevel: number;
+  playerExp: number;
+  spiritGems: number;
+  unlockedChapterId: string;
+  unlockedClues: string[];
+  heroes: Hero[];
+  ownedSpirits: SpiritCompanion[];
+  createdAt: number;
+  lastSavedAt: number;
+}
