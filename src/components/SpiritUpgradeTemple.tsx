@@ -1,7 +1,14 @@
 import React, { useState } from 'react';
 import confetti from 'canvas-confetti';
 import { SpiritCompanion, Hero } from '../types';
-import { INITIAL_SPIRITS, AWAKEN_TIERS, applyAwakenRankToSpirit } from '../data/spirits';
+import { 
+  INITIAL_SPIRITS, 
+  AWAKEN_TIERS, 
+  applyAwakenRankToSpirit, 
+  getSpiritUpgradeCost, 
+  getSpiritUpgradeStatGain, 
+  getSpiritAwakenCost 
+} from '../data/spirits';
 import { ElementBadge } from './ElementBadge';
 import { audioService } from '../services/audioService';
 import { SpiritShiftAnimation } from './SpiritShiftAnimation';
@@ -34,8 +41,6 @@ interface SpiritUpgradeTempleProps {
   onUpdateSpirit: (updatedSpirit: SpiritCompanion) => void;
 }
 
-const UPGRADE_COST = 20; // 20 tokens per level up
-
 export const SpiritUpgradeTemple: React.FC<SpiritUpgradeTempleProps> = ({
   heroes,
   spiritGems,
@@ -65,6 +70,12 @@ export const SpiritUpgradeTemple: React.FC<SpiritUpgradeTempleProps> = ({
     prevLevel?: number;
   } | null>(null);
 
+  // Dynamic cost & stat gains based on rarity and level
+  const currentLevelUpCost = getSpiritUpgradeCost(selectedSpirit);
+  const currentStatGains = getSpiritUpgradeStatGain(selectedSpirit);
+  const currentAwakenRank = selectedSpirit.awakenRank ?? 1;
+  const awakenCost = currentAwakenRank < 5 ? getSpiritAwakenCost(selectedSpirit, currentAwakenRank + 1) : 0;
+
   // Equip with Spirit Shift Animation
   const handleEquipWithAnimation = (heroId: string, spiritToEquip: SpiritCompanion) => {
     const targetHero = heroes.find(h => h.id === heroId);
@@ -83,52 +94,50 @@ export const SpiritUpgradeTemple: React.FC<SpiritUpgradeTempleProps> = ({
     });
   };
 
-  // Level Up Spirit
+  // Level Up Spirit (Scaled by Rarity)
   const handleLevelUp = () => {
-    if (spiritGems < UPGRADE_COST) {
+    if (spiritGems < currentLevelUpCost) {
       audioService.playWeakness();
       return;
     }
 
-    if (!onSpendGems(UPGRADE_COST)) return;
+    if (!onSpendGems(currentLevelUpCost)) return;
 
     audioService.playOneMore();
     confetti({
-      particleCount: 50,
-      spread: 60,
+      particleCount: selectedSpirit.rarity === 'SSR' ? 80 : 50,
+      spread: 65,
       origin: { y: 0.6 },
-      colors: ['#00f5d4', '#ffd166', '#ff0033']
+      colors: selectedSpirit.rarity === 'SSR'
+        ? ['#fbbf24', '#e11d48', '#ffffff', '#f59e0b']
+        : ['#00f5d4', '#ffd166', '#ff0033']
     });
 
     const updated: SpiritCompanion = {
       ...selectedSpirit,
-      level: selectedSpirit.level + 1,
-      bonusHp: selectedSpirit.bonusHp + 25,
-      bonusSp: selectedSpirit.bonusSp + 10,
-      bonusAtk: selectedSpirit.bonusAtk + 6,
-      bonusDef: selectedSpirit.bonusDef + 4
+      level: (selectedSpirit.level || 1) + 1,
+      bonusHp: selectedSpirit.bonusHp + currentStatGains.hp,
+      bonusSp: selectedSpirit.bonusSp + currentStatGains.sp,
+      bonusAtk: selectedSpirit.bonusAtk + currentStatGains.atk,
+      bonusDef: selectedSpirit.bonusDef + currentStatGains.def
     };
 
     setSelectedSpirit(updated);
     onUpdateSpirit(updated);
   };
 
-  // Awaken Star Rank (★1 to ★5)
+  // Awaken Star Rank (★1 to ★5, Scaled by Rarity)
   const handleAwakenRank = () => {
-    const currentRank = selectedSpirit.awakenRank ?? 1;
-    if (currentRank >= 5) return;
+    if (currentAwakenRank >= 5) return;
 
-    const nextTier = AWAKEN_TIERS[currentRank + 1];
-    const cost = nextTier ? nextTier.costTokens : 40;
-
-    if (spiritGems < cost) {
+    if (spiritGems < awakenCost) {
       audioService.playWeakness();
       return;
     }
 
-    if (!onSpendGems(cost)) return;
+    if (!onSpendGems(awakenCost)) return;
 
-    const updated = applyAwakenRankToSpirit(selectedSpirit, currentRank + 1);
+    const updated = applyAwakenRankToSpirit(selectedSpirit, currentAwakenRank + 1);
     setSelectedSpirit(updated);
     onUpdateSpirit(updated);
 
@@ -149,10 +158,6 @@ export const SpiritUpgradeTemple: React.FC<SpiritUpgradeTempleProps> = ({
       spirit.element.toLowerCase().includes(searchQuery.toLowerCase());
     return matchRarity && matchSearch;
   });
-
-  const currentAwakenRank = selectedSpirit.awakenRank ?? 1;
-  const nextAwakenTier = AWAKEN_TIERS[currentAwakenRank + 1];
-  const awakenCost = nextAwakenTier ? nextAwakenTier.costTokens : 40;
 
   return (
     <div className="w-full bg-[#0E0E12]/95 border-2 border-[#FF0033]/60 rounded-xl p-4 sm:p-6 shadow-2xl relative overflow-hidden backdrop-blur-md">
@@ -186,6 +191,61 @@ export const SpiritUpgradeTemple: React.FC<SpiritUpgradeTempleProps> = ({
             <div className="font-bebas text-xl text-yellow-400 leading-none">
               {spiritGems} <span className="text-xs text-neutral-400 font-mono">TOKEN</span>
             </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Rarity Pricing Tier Summary Card */}
+      <div className="bg-[#14141E]/90 border border-neutral-800 rounded-lg p-3 mb-6 relative z-10 grid grid-cols-1 sm:grid-cols-3 gap-3 font-mono text-xs">
+        {/* Tier R */}
+        <div className="bg-black/50 border border-blue-900/40 rounded p-2.5 flex flex-col justify-between">
+          <div className="flex items-center justify-between mb-1">
+            <span className="font-bebas text-sm text-blue-400 font-bold tracking-wider">
+              TINGKAT R (LANGKA)
+            </span>
+            <span className="text-[10px] bg-blue-950 text-blue-300 px-1.5 py-0.2 rounded">
+              EKONOMIS
+            </span>
+          </div>
+          <div className="text-[11px] text-neutral-300 space-y-0.5">
+            <div>&bull; Upgrade: <span className="text-white font-bold">25 - 70 Token/Lv</span></div>
+            <div>&bull; Awaken ★1-★5: <span className="text-white font-bold">40 - 80 Token</span></div>
+            <div>&bull; Stat/Lv: <span className="text-green-400">+22 HP</span>, <span className="text-red-400">+5 ATK</span></div>
+          </div>
+        </div>
+
+        {/* Tier SR */}
+        <div className="bg-black/50 border border-purple-900/40 rounded p-2.5 flex flex-col justify-between">
+          <div className="flex items-center justify-between mb-1">
+            <span className="font-bebas text-sm text-purple-400 font-bold tracking-wider">
+              TINGKAT SR (SANGAT LANGKA)
+            </span>
+            <span className="text-[10px] bg-purple-950 text-purple-300 px-1.5 py-0.2 rounded">
+              MENENGAH
+            </span>
+          </div>
+          <div className="text-[11px] text-neutral-300 space-y-0.5">
+            <div>&bull; Upgrade: <span className="text-white font-bold">60 - 195 Token/Lv</span></div>
+            <div>&bull; Awaken ★1-★5: <span className="text-white font-bold">64 - 128 Token</span></div>
+            <div>&bull; Stat/Lv: <span className="text-green-400">+38 HP</span>, <span className="text-red-400">+9 ATK</span></div>
+          </div>
+        </div>
+
+        {/* Tier SSR */}
+        <div className="bg-gradient-to-r from-red-950/40 via-amber-950/40 to-black border-2 border-yellow-500/60 rounded p-2.5 flex flex-col justify-between shadow-md">
+          <div className="flex items-center justify-between mb-1">
+            <span className="font-bebas text-sm text-yellow-400 font-black tracking-wider flex items-center gap-1">
+              <Crown className="w-3.5 h-3.5 text-yellow-400" />
+              TINGKAT SSR (DEWA ROH)
+            </span>
+            <span className="text-[10px] bg-red-600 text-white font-bold px-1.5 py-0.2 rounded animate-pulse">
+              MAHAL &bull; PRESTISE
+            </span>
+          </div>
+          <div className="text-[11px] text-neutral-200 space-y-0.5">
+            <div>&bull; Upgrade: <span className="text-yellow-400 font-bold">135 - 450+ Token/Lv</span></div>
+            <div>&bull; Awaken ★1-★5: <span className="text-amber-400 font-bold">100 - 200 Token (2.5x)</span></div>
+            <div>&bull; Stat/Lv: <span className="text-green-400 font-bold">+65 HP</span>, <span className="text-red-400 font-bold">+16 ATK</span></div>
           </div>
         </div>
       </div>
@@ -350,38 +410,100 @@ export const SpiritUpgradeTemple: React.FC<SpiritUpgradeTempleProps> = ({
               </div>
 
               {/* Action Buttons: Level Up & Awaken */}
-              <div className="flex items-center gap-2 flex-wrap">
-                {/* Level Up Button */}
-                <button
-                  onClick={handleLevelUp}
-                  disabled={spiritGems < UPGRADE_COST}
-                  className={`bg-green-700 hover:bg-green-600 disabled:opacity-40 text-white font-bebas text-sm px-4 py-2 skew-x-[-10deg] border-2 border-green-400 cursor-pointer shadow-lg flex items-center gap-1.5 ${
-                    spiritGems < UPGRADE_COST ? 'cursor-not-allowed' : ''
-                  }`}
-                >
-                  <ArrowUpCircle className="w-4 h-4 transform skew-x-[10deg]" />
-                  <span className="transform skew-x-[10deg] font-bold">
-                    UPGRADE LV (+{UPGRADE_COST} TOKEN)
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 flex-wrap">
+                {/* Level Up Button & Projection */}
+                <div className="flex flex-col items-start sm:items-end">
+                  <button
+                    onClick={handleLevelUp}
+                    disabled={spiritGems < currentLevelUpCost}
+                    className={`font-bebas text-sm px-4 py-2 skew-x-[-10deg] border-2 cursor-pointer shadow-lg flex items-center gap-1.5 transition-all ${
+                      selectedSpirit.rarity === 'SSR'
+                        ? 'bg-gradient-to-r from-red-700 via-amber-700 to-red-800 hover:from-red-600 hover:to-amber-600 text-white border-yellow-400 font-black'
+                        : selectedSpirit.rarity === 'SR'
+                        ? 'bg-purple-700 hover:bg-purple-600 text-white border-purple-400'
+                        : 'bg-green-700 hover:bg-green-600 text-white border-green-400'
+                    } ${spiritGems < currentLevelUpCost ? 'opacity-40 cursor-not-allowed' : ''}`}
+                  >
+                    <ArrowUpCircle className="w-4 h-4 transform skew-x-[10deg]" />
+                    <span className="transform skew-x-[10deg] font-bold">
+                      UPGRADE LV {(selectedSpirit.level || 1) + 1} ({currentLevelUpCost} TOKEN)
+                    </span>
+                  </button>
+                  <span className="text-[10px] font-mono text-neutral-400 mt-1">
+                    Proyeksi: +{currentStatGains.hp} HP &bull; +{currentStatGains.sp} SP &bull; +{currentStatGains.atk} ATK &bull; +{currentStatGains.def} DEF
                   </span>
-                </button>
+                </div>
 
                 {/* Awaken Button */}
                 {currentAwakenRank < 5 && (
-                  <button
-                    onClick={handleAwakenRank}
-                    disabled={spiritGems < awakenCost}
-                    className={`bg-amber-600 hover:bg-amber-500 disabled:opacity-40 text-black font-bebas text-sm px-4 py-2 skew-x-[-10deg] border-2 border-amber-300 font-black cursor-pointer shadow-lg flex items-center gap-1.5 ${
-                      spiritGems < awakenCost ? 'cursor-not-allowed' : ''
-                    }`}
-                  >
-                    <Star className="w-4 h-4 fill-black transform skew-x-[10deg]" />
-                    <span className="transform skew-x-[10deg]">
-                      BANGKITKAN ★{currentAwakenRank + 1} ({awakenCost} TOKEN)
+                  <div className="flex flex-col items-start sm:items-end">
+                    <button
+                      onClick={handleAwakenRank}
+                      disabled={spiritGems < awakenCost}
+                      className={`font-bebas text-sm px-4 py-2 skew-x-[-10deg] border-2 font-black cursor-pointer shadow-lg flex items-center gap-1.5 transition-all ${
+                        selectedSpirit.rarity === 'SSR'
+                          ? 'bg-amber-500 hover:bg-amber-400 text-black border-yellow-300 shadow-amber-500/20'
+                          : selectedSpirit.rarity === 'SR'
+                          ? 'bg-purple-600 hover:bg-purple-500 text-white border-purple-300'
+                          : 'bg-amber-600 hover:bg-amber-500 text-black border-amber-300'
+                      } ${spiritGems < awakenCost ? 'opacity-40 cursor-not-allowed' : ''}`}
+                    >
+                      <Star className={`w-4 h-4 transform skew-x-[10deg] ${selectedSpirit.rarity === 'SR' ? 'fill-white' : 'fill-black'}`} />
+                      <span className="transform skew-x-[10deg]">
+                        BANGKITKAN ★{currentAwakenRank + 1} ({awakenCost} TOKEN)
+                      </span>
+                    </button>
+                    <span className="text-[10px] font-mono text-amber-400/80 mt-1">
+                      {selectedSpirit.rarity === 'SSR' ? 'Awaken SSR (Tarif 2.5x)' : selectedSpirit.rarity === 'SR' ? 'Awaken SR (Tarif 1.6x)' : 'Awaken Standar'}
                     </span>
-                  </button>
+                  </div>
                 )}
               </div>
             </div>
+
+            {/* Rarity Specific Pricing Banner */}
+            {selectedSpirit.rarity === 'SSR' && (
+              <div className="bg-gradient-to-r from-red-950/80 via-amber-950/70 to-black border-2 border-yellow-500/70 p-3 rounded-lg mb-4 shadow-lg flex items-start gap-3">
+                <Crown className="w-5 h-5 text-yellow-400 shrink-0 mt-0.5" />
+                <div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="font-bebas text-sm text-yellow-400 tracking-wider font-bold">
+                      ROH LEGENDA SSR &bull; TARIF UPGRADE PRESTISE
+                    </span>
+                    <span className="bg-red-600 text-white font-mono text-[9px] px-1.5 py-0.5 rounded font-black tracking-wider uppercase">
+                      BIAYA TINGGI &bull; STAT OVERPOWER
+                    </span>
+                  </div>
+                  <p className="text-xs text-neutral-300 font-mono mt-1 leading-relaxed">
+                    Sebagai Roh Dewa/Legenda berdaya hancur tertinggi, persembahan token lebih mahal (<span className="text-yellow-400 font-bold">{currentLevelUpCost} Token/Lv</span> &amp; <span className="text-amber-400 font-bold">{awakenCost} Token/Awaken</span>), sebanding dengan perolehan stat tertinggi di jagat ghaib: <span className="text-green-400 font-bold">+{currentStatGains.hp} HP</span>, <span className="text-cyan-400 font-bold">+{currentStatGains.sp} SP</span>, <span className="text-red-400 font-bold">+{currentStatGains.atk} ATK</span>, <span className="text-amber-400 font-bold">+{currentStatGains.def} DEF</span> per level!
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {selectedSpirit.rarity === 'SR' && (
+              <div className="bg-purple-950/40 border border-purple-800/60 p-2.5 rounded-lg mb-4 text-xs font-mono text-purple-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+                <span className="flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5 text-purple-400" />
+                  <span>Tarif Kelangkaan SR: <strong className="text-purple-300">{currentLevelUpCost} Token/Lv</strong> (Awaken: {awakenCost} Token)</span>
+                </span>
+                <span className="text-[11px] text-purple-300 font-mono">
+                  Pertumbuhan: +{currentStatGains.hp} HP &bull; +{currentStatGains.atk} ATK &bull; +{currentStatGains.def} DEF
+                </span>
+              </div>
+            )}
+
+            {selectedSpirit.rarity === 'R' && (
+              <div className="bg-blue-950/30 border border-blue-800/50 p-2.5 rounded-lg mb-4 text-xs font-mono text-blue-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+                <span className="flex items-center gap-1.5">
+                  <Shield className="w-3.5 h-3.5 text-blue-400" />
+                  <span>Tarif Kelangkaan R: <strong className="text-blue-300">{currentLevelUpCost} Token/Lv</strong> (Biaya Ekonomis)</span>
+                </span>
+                <span className="text-[11px] text-blue-300 font-mono">
+                  Pertumbuhan: +{currentStatGains.hp} HP &bull; +{currentStatGains.atk} ATK &bull; +{currentStatGains.def} DEF
+                </span>
+              </div>
+            )}
 
             {/* Signature Quote */}
             <div className="bg-black/40 border-l-4 border-yellow-500/80 p-3 rounded mb-4">

@@ -116,6 +116,68 @@ class AudioManager {
     }
   }
 
+  // Persona-style Mask Rip Awakening sound
+  public playMaskRip() {
+    if (this.isMuted) return;
+    try {
+      this.initCtx();
+      if (!this.ctx) return;
+      const t = this.ctx.currentTime;
+
+      // 1. Tearing / snapping high-pitch crack
+      const snapOsc = this.ctx.createOscillator();
+      const snapGain = this.ctx.createGain();
+      snapOsc.type = 'sawtooth';
+      snapOsc.frequency.setValueAtTime(2600, t);
+      snapOsc.frequency.exponentialRampToValueAtTime(360, t + 0.09);
+      snapGain.gain.setValueAtTime(0.35, t);
+      snapGain.gain.exponentialRampToValueAtTime(0.001, t + 0.1);
+      snapOsc.connect(snapGain);
+      snapGain.connect(this.ctx.destination);
+      snapOsc.start(t);
+      snapOsc.stop(t + 0.1);
+
+      // 2. Spiritual soul fire burst (noise whoosh)
+      const bufferSize = Math.floor(this.ctx.sampleRate * 0.35);
+      const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+      const data = buffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+      const noise = this.ctx.createBufferSource();
+      noise.buffer = buffer;
+      const filter = this.ctx.createBiquadFilter();
+      filter.type = 'lowpass';
+      filter.frequency.setValueAtTime(800, t);
+      filter.frequency.exponentialRampToValueAtTime(3200, t + 0.12);
+      filter.frequency.exponentialRampToValueAtTime(450, t + 0.35);
+      const noiseGain = this.ctx.createGain();
+      noiseGain.gain.setValueAtTime(0.01, t);
+      noiseGain.gain.exponentialRampToValueAtTime(0.32, t + 0.08);
+      noiseGain.gain.exponentialRampToValueAtTime(0.01, t + 0.35);
+      noise.connect(filter);
+      filter.connect(noiseGain);
+      noiseGain.connect(this.ctx.destination);
+      noise.start(t);
+
+      // 3. Resonant soul awakening chord (A major triad)
+      const chordNotes = [220, 277.18, 329.63, 440];
+      chordNotes.forEach((freq, idx) => {
+        if (!this.ctx) return;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, t + 0.04 + idx * 0.01);
+        gain.gain.setValueAtTime(0.14, t + 0.04);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.42);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(t + 0.04);
+        osc.stop(t + 0.43);
+      });
+    } catch {
+      // Audio fallback safe
+    }
+  }
+
   // Weakness Hit / Critical Strike (Heavy Punchy Impact)
   public playCritical() {
     if (this.isMuted) return;
@@ -182,6 +244,304 @@ class AudioManager {
         osc.start(t + idx * 0.08);
         osc.stop(t + idx * 0.08 + 0.4);
       });
+    } catch {
+      // Ignored
+    }
+  }
+
+  // Brutal Attack Slash Sound (Multi-layered visceral slash + sub-impact)
+  public playBrutalSlash(isCrit: boolean = false) {
+    if (this.isMuted) return;
+    try {
+      this.initCtx();
+      if (!this.ctx) return;
+      const t = this.ctx.currentTime;
+
+      // 1. Visceral tearing noise
+      const bufferSize = Math.floor(this.ctx.sampleRate * (isCrit ? 0.22 : 0.15));
+      const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+      const data = buffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) {
+        data[i] = (Math.random() * 2 - 1) * (1 - i / bufferSize);
+      }
+      const noise = this.ctx.createBufferSource();
+      noise.buffer = buffer;
+
+      const filter = this.ctx.createBiquadFilter();
+      filter.type = 'bandpass';
+      filter.frequency.setValueAtTime(isCrit ? 2200 : 1600, t);
+      filter.frequency.exponentialRampToValueAtTime(180, t + (isCrit ? 0.22 : 0.15));
+
+      const gain = this.ctx.createGain();
+      gain.gain.setValueAtTime(isCrit ? 0.5 : 0.35, t);
+      gain.gain.exponentialRampToValueAtTime(0.01, t + (isCrit ? 0.22 : 0.15));
+
+      noise.connect(filter);
+      filter.connect(gain);
+      gain.connect(this.ctx.destination);
+      noise.start(t);
+
+      // 2. Heavy Sub Bass Thud for visceral punch
+      const sub = this.ctx.createOscillator();
+      const subGain = this.ctx.createGain();
+      sub.type = 'triangle';
+      sub.frequency.setValueAtTime(isCrit ? 160 : 110, t);
+      sub.frequency.exponentialRampToValueAtTime(32, t + (isCrit ? 0.3 : 0.18));
+
+      subGain.gain.setValueAtTime(isCrit ? 0.45 : 0.3, t);
+      subGain.gain.exponentialRampToValueAtTime(0.001, t + (isCrit ? 0.32 : 0.2));
+
+      sub.connect(subGain);
+      subGain.connect(this.ctx.destination);
+      sub.start(t);
+      sub.stop(t + (isCrit ? 0.32 : 0.2));
+
+      // 3. Metallic blade ring on critical
+      if (isCrit) {
+        const ring = this.ctx.createOscillator();
+        const ringGain = this.ctx.createGain();
+        ring.type = 'sine';
+        ring.frequency.setValueAtTime(1760, t);
+        ring.frequency.exponentialRampToValueAtTime(3520, t + 0.1);
+        ringGain.gain.setValueAtTime(0.25, t);
+        ringGain.gain.exponentialRampToValueAtTime(0.001, t + 0.25);
+        ring.connect(ringGain);
+        ringGain.connect(this.ctx.destination);
+        ring.start(t);
+        ring.stop(t + 0.26);
+      }
+    } catch {
+      // Ignored
+    }
+  }
+
+  // Brutal Gun / Jimat Peluru Sound (Double gunshot crack + shell ping)
+  public playBrutalGun() {
+    if (this.isMuted) return;
+    try {
+      this.initCtx();
+      if (!this.ctx) return;
+      const t = this.ctx.currentTime;
+
+      // Two rapid shots
+      [0, 0.1].forEach((delay) => {
+        const shotTime = t + delay;
+        // White noise gunpowder crack
+        const bufferSize = Math.floor(this.ctx!.sampleRate * 0.12);
+        const buffer = this.ctx!.createBuffer(1, bufferSize, this.ctx!.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) {
+          data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (this.ctx!.sampleRate * 0.02));
+        }
+        const noise = this.ctx!.createBufferSource();
+        noise.buffer = buffer;
+
+        const gain = this.ctx!.createGain();
+        gain.gain.setValueAtTime(0.4, shotTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, shotTime + 0.12);
+
+        noise.connect(gain);
+        gain.connect(this.ctx!.destination);
+        noise.start(shotTime);
+
+        // Sub blast
+        const osc = this.ctx!.createOscillator();
+        const oscGain = this.ctx!.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(180, shotTime);
+        osc.frequency.exponentialRampToValueAtTime(45, shotTime + 0.15);
+        oscGain.gain.setValueAtTime(0.35, shotTime);
+        oscGain.gain.exponentialRampToValueAtTime(0.001, shotTime + 0.15);
+        osc.connect(oscGain);
+        oscGain.connect(this.ctx!.destination);
+        osc.start(shotTime);
+        osc.stop(shotTime + 0.16);
+      });
+
+      // Metallic cartridge ping
+      setTimeout(() => {
+        if (!this.ctx || this.isMuted) return;
+        const now = this.ctx.currentTime;
+        const ping = this.ctx.createOscillator();
+        const pingGain = this.ctx.createGain();
+        ping.type = 'sine';
+        ping.frequency.setValueAtTime(3200, now);
+        pingGain.gain.setValueAtTime(0.12, now);
+        pingGain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
+        ping.connect(pingGain);
+        pingGain.connect(this.ctx.destination);
+        ping.start(now);
+        ping.stop(now + 0.19);
+      }, 220);
+    } catch {
+      // Ignored
+    }
+  }
+
+  // Showtime Ready Audio Chime (Vibrant golden notify chime)
+  public playShowtimeReady() {
+    if (this.isMuted) return;
+    try {
+      this.initCtx();
+      if (!this.ctx) return;
+      const t = this.ctx.currentTime;
+      // Rising harmonic chords: E5 -> G#5 -> B5 -> E6
+      const freqs = [659.25, 830.61, 987.77, 1318.51];
+      freqs.forEach((f, idx) => {
+        const osc = this.ctx!.createOscillator();
+        const gain = this.ctx!.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(f, t + idx * 0.05);
+
+        gain.gain.setValueAtTime(0, t);
+        gain.gain.linearRampToValueAtTime(0.2, t + idx * 0.05 + 0.01);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + idx * 0.05 + 0.35);
+
+        osc.connect(gain);
+        gain.connect(this.ctx!.destination);
+        osc.start(t + idx * 0.05);
+        osc.stop(t + idx * 0.05 + 0.36);
+      });
+    } catch {
+      // Ignored
+    }
+  }
+
+  // Cinematic Showtime Opener (Dramatic blade unsheath + sub drop + sonic flash)
+  public playShowtimeOpener() {
+    if (this.isMuted) return;
+    try {
+      this.initCtx();
+      if (!this.ctx) return;
+      const t = this.ctx.currentTime;
+
+      // 1. High-frequency metallic unsheath whoosh
+      const unsheath = this.ctx.createOscillator();
+      const unsheathGain = this.ctx.createGain();
+      unsheath.type = 'sawtooth';
+      unsheath.frequency.setValueAtTime(800, t);
+      unsheath.frequency.exponentialRampToValueAtTime(3600, t + 0.2);
+      unsheathGain.gain.setValueAtTime(0.35, t);
+      unsheathGain.gain.exponentialRampToValueAtTime(0.01, t + 0.28);
+      unsheath.connect(unsheathGain);
+      unsheathGain.connect(this.ctx.destination);
+      unsheath.start(t);
+      unsheath.stop(t + 0.3);
+
+      // 2. Cinematic sub-bass drop (P5 alert impact)
+      const sub = this.ctx.createOscillator();
+      const subGain = this.ctx.createGain();
+      sub.type = 'sine';
+      sub.frequency.setValueAtTime(240, t + 0.05);
+      sub.frequency.exponentialRampToValueAtTime(35, t + 0.55);
+      subGain.gain.setValueAtTime(0.55, t + 0.05);
+      subGain.gain.exponentialRampToValueAtTime(0.001, t + 0.6);
+      sub.connect(subGain);
+      subGain.connect(this.ctx.destination);
+      sub.start(t + 0.05);
+      sub.stop(t + 0.62);
+
+      // 3. Shimmer resonance
+      const shimmer = this.ctx.createOscillator();
+      const shimmerGain = this.ctx.createGain();
+      shimmer.type = 'sine';
+      shimmer.frequency.setValueAtTime(2200, t + 0.1);
+      shimmer.frequency.exponentialRampToValueAtTime(1100, t + 0.45);
+      shimmerGain.gain.setValueAtTime(0.2, t + 0.1);
+      shimmerGain.gain.exponentialRampToValueAtTime(0.001, t + 0.48);
+      shimmer.connect(shimmerGain);
+      shimmerGain.connect(this.ctx.destination);
+      shimmer.start(t + 0.1);
+      shimmer.stop(t + 0.5);
+    } catch {
+      // Ignored
+    }
+  }
+
+  // Cinematic Showtime Duo Clash (Harmonic spirit surge)
+  public playShowtimeDuoClash() {
+    if (this.isMuted) return;
+    try {
+      this.initCtx();
+      if (!this.ctx) return;
+      const t = this.ctx.currentTime;
+      // Dual power chord (A3 & E4 & A4)
+      [220, 329.63, 440, 659.25].forEach((freq) => {
+        const osc = this.ctx!.createOscillator();
+        const gain = this.ctx!.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(freq, t);
+        gain.gain.setValueAtTime(0.18, t);
+        gain.gain.exponentialRampToValueAtTime(0.01, t + 0.55);
+        osc.connect(gain);
+        gain.connect(this.ctx!.destination);
+        osc.start(t);
+        osc.stop(t + 0.58);
+      });
+    } catch {
+      // Ignored
+    }
+  }
+
+  // Cinematic Showtime Strike Barrage (Rapid savage multi-hit strikes)
+  public playShowtimeStrikeBarrage() {
+    if (this.isMuted) return;
+    try {
+      this.initCtx();
+      if (!this.ctx) return;
+      // 5 rapid slashes in rapid succession
+      for (let i = 0; i < 5; i++) {
+        setTimeout(() => {
+          this.playBrutalSlash(i === 4);
+        }, i * 95);
+      }
+    } catch {
+      // Ignored
+    }
+  }
+
+  // Cinematic Showtime Finish Blast (Huge detonation + glass shatter + victory resonance)
+  public playShowtimeFinishBlast() {
+    if (this.isMuted) return;
+    try {
+      this.initCtx();
+      if (!this.ctx) return;
+      const t = this.ctx.currentTime;
+
+      // 1. Massive sub detonation
+      const blast = this.ctx.createOscillator();
+      const blastGain = this.ctx.createGain();
+      blast.type = 'sawtooth';
+      blast.frequency.setValueAtTime(180, t);
+      blast.frequency.exponentialRampToValueAtTime(25, t + 0.75);
+      blastGain.gain.setValueAtTime(0.65, t);
+      blastGain.gain.exponentialRampToValueAtTime(0.001, t + 0.8);
+      blast.connect(blastGain);
+      blastGain.connect(this.ctx.destination);
+      blast.start(t);
+      blast.stop(t + 0.82);
+
+      // 2. Crystal glass shatter
+      this.playAllOutShatter();
+
+      // 3. Triumphant Brass chord: F4 -> A4 -> C5 -> F5
+      setTimeout(() => {
+        if (!this.ctx || this.isMuted) return;
+        const now = this.ctx.currentTime;
+        const notes = [349.23, 440.00, 523.25, 698.46, 880.00];
+        notes.forEach((freq, idx) => {
+          const osc = this.ctx!.createOscillator();
+          const gain = this.ctx!.createGain();
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(freq, now + idx * 0.04);
+          gain.gain.setValueAtTime(0.25, now + idx * 0.04);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.04 + 0.7);
+          osc.connect(gain);
+          gain.connect(this.ctx!.destination);
+          osc.start(now + idx * 0.04);
+          osc.stop(now + idx * 0.04 + 0.75);
+        });
+      }, 150);
     } catch {
       // Ignored
     }

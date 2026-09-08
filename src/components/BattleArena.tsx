@@ -44,6 +44,9 @@ interface ActiveSpiritAttack {
   onFinish: () => void;
 }
 
+// Minimum highlight gauge required to unleash Showtime (reduced from 100 to 70 for fluid accessibility)
+const SHOWTIME_THRESHOLD = 70;
+
 export const BattleArena: React.FC<BattleArenaProps> = ({
   heroes: initialHeroes,
   initialEnemies,
@@ -54,7 +57,13 @@ export const BattleArena: React.FC<BattleArenaProps> = ({
 }) => {
   const [difficulty, setDifficulty] = useState<ArenaDifficulty>('standar');
   const [heroes, setHeroes] = useState<Hero[]>(() =>
-    initialHeroes.map(h => ({ ...h, isDown: false, isDefending: false }))
+    initialHeroes.map(h => ({
+      ...h,
+      isDown: false,
+      isDefending: false,
+      // Starts with at least 40% gauge so player can unleash Showtime early in combat
+      highlightGauge: Math.max(40, h.highlightGauge || 0)
+    }))
   );
   const [enemies, setEnemies] = useState<EnemyGhost[]>(() =>
     initialEnemies.map(e => ({ ...e, isDown: false }))
@@ -194,12 +203,25 @@ export const BattleArena: React.FC<BattleArenaProps> = ({
     advanceTurn();
   };
 
-  // Trigger ONE MORE! extra turn
+  // Trigger ONE MORE! extra turn with party-wide Showtime boost
   const triggerOneMore = () => {
     setHasOneMore(true);
     setShowOneMoreBanner(true);
     audioService.playOneMore();
-    addLog(`1 MORE! Giliran tambahan didapatkan!`, 'onemore');
+    addLog(`1 MORE! Giliran tambahan didapatkan! Seluruh tim memperoleh +15% Showtime!`, 'onemore');
+
+    // Grant +15% Showtime gauge to all alive heroes
+    setHeroes(prev =>
+      prev.map(h => {
+        if (h.hp <= 0) return h;
+        const newGauge = Math.min(100, h.highlightGauge + 15);
+        if (newGauge >= SHOWTIME_THRESHOLD && h.highlightGauge < SHOWTIME_THRESHOLD) {
+          audioService.playShowtimeReady();
+        }
+        return { ...h, highlightGauge: newGauge };
+      })
+    );
+
     setTimeout(() => {
       setShowOneMoreBanner(false);
     }, 1500);
@@ -299,10 +321,14 @@ export const BattleArena: React.FC<BattleArenaProps> = ({
               if (isCrit) dmg = Math.floor(dmg * 1.5);
 
               const newHp = Math.max(0, targetHero.hp - dmg);
+              const newGauge = Math.min(100, targetHero.highlightGauge + 25);
+              if (newGauge >= SHOWTIME_THRESHOLD && targetHero.highlightGauge < SHOWTIME_THRESHOLD) {
+                audioService.playShowtimeReady();
+              }
               currentHeroes[targetIndex] = {
                 ...targetHero,
                 hp: newHp,
-                highlightGauge: Math.min(100, targetHero.highlightGauge + 15)
+                highlightGauge: newGauge
               };
             });
 
@@ -331,10 +357,14 @@ export const BattleArena: React.FC<BattleArenaProps> = ({
 
             audioService.playSlash();
             const newHp = Math.max(0, targetHero.hp - dmg);
+            const newGauge = Math.min(100, targetHero.highlightGauge + 25);
+            if (newGauge >= SHOWTIME_THRESHOLD && targetHero.highlightGauge < SHOWTIME_THRESHOLD) {
+              audioService.playShowtimeReady();
+            }
             currentHeroes[targetIndex] = {
               ...targetHero,
               hp: newHp,
-              highlightGauge: Math.min(100, targetHero.highlightGauge + 15)
+              highlightGauge: newGauge
             };
 
             addLog(
@@ -392,28 +422,45 @@ export const BattleArena: React.FC<BattleArenaProps> = ({
     }, 600);
   };
 
-  // Perform standard Physical Attack
+  // Perform standard Physical Attack with Brutal Slash SFX & Showtime Charge
   const handlePhysicalAttack = () => {
     if (isEnemyTurn || activeSpiritAttack) return;
     const targetEnemy = enemies[selectedEnemyIndex];
     if (!targetEnemy || targetEnemy.hp <= 0) return;
 
-    audioService.playSlash();
-    const isCrit = Math.random() < 0.25;
-    let dmg = Math.floor((activeHero.baseAtk * 1.5) - (targetEnemy.defense * 0.4));
-    if (isCrit) dmg = Math.floor(dmg * 1.7);
-    dmg = Math.max(15, dmg);
+    const isCrit = Math.random() < 0.28;
+    audioService.playBrutalSlash(isCrit);
+
+    let dmg = Math.floor((activeHero.baseAtk * 1.6) - (targetEnemy.defense * 0.35));
+    if (isCrit) dmg = Math.floor(dmg * 1.8);
+    dmg = Math.max(20, dmg);
+
+    // Boost highlight gauge by +22 (or +30 on critical hit)
+    const gaugeGain = isCrit ? 30 : 22;
+    setHeroes(prev =>
+      prev.map((h, i) => {
+        if (i !== activeHeroIndex) return h;
+        const newGauge = Math.min(100, h.highlightGauge + gaugeGain);
+        if (newGauge >= SHOWTIME_THRESHOLD && h.highlightGauge < SHOWTIME_THRESHOLD) {
+          audioService.playShowtimeReady();
+        }
+        return { ...h, highlightGauge: newGauge };
+      })
+    );
 
     setPlayerAttackVfx({ type: 'melee', enemyIndex: selectedEnemyIndex, isCrit });
-    setTimeout(() => setPlayerAttackVfx(null), 500);
+    setTimeout(() => setPlayerAttackVfx(null), 650);
 
     showDamageNumber(`-${dmg}`, isCrit ? 'text-amber-400' : 'text-slate-100', isCrit);
-    addLog(`${activeHero.name} melancarkan tebasan pedang fisik pada ${targetEnemy.name}! (-${dmg} HP)`, isCrit ? 'critical' : 'action');
+    addLog(
+      `${activeHero.name} melancarkan TEBASAN BRUTAL pada ${targetEnemy.name}! (-${dmg} HP) ${isCrit ? '★ CRITICAL MUTLAK!' : ''}`,
+      isCrit ? 'critical' : 'action'
+    );
 
     applyDamageToEnemy(selectedEnemyIndex, dmg, 'Fisik', isCrit);
   };
 
-  // Perform Gun / Jimat Peluru Attack
+  // Perform Gun / Jimat Peluru Attack with Brutal Gun SFX & Showtime Charge
   const handleGunAttack = () => {
     if (isEnemyTurn || activeSpiritAttack) return;
     if (activeHero.gunBullets <= 0) {
@@ -424,23 +471,35 @@ export const BattleArena: React.FC<BattleArenaProps> = ({
     const targetEnemy = enemies[selectedEnemyIndex];
     if (!targetEnemy || targetEnemy.hp <= 0) return;
 
-    audioService.playSlash();
+    audioService.playBrutalGun();
     const bulletsToShoot = Math.min(2, activeHero.gunBullets);
-    const dmgPerBullet = Math.floor((activeHero.baseAtk * 0.9) - (targetEnemy.defense * 0.2));
-    const totalDmg = Math.max(20, dmgPerBullet * bulletsToShoot);
+    const dmgPerBullet = Math.floor((activeHero.baseAtk * 0.95) - (targetEnemy.defense * 0.2));
+    const totalDmg = Math.max(25, dmgPerBullet * bulletsToShoot);
 
     setPlayerAttackVfx({ type: 'gun', enemyIndex: selectedEnemyIndex });
-    setTimeout(() => setPlayerAttackVfx(null), 500);
+    setTimeout(() => setPlayerAttackVfx(null), 650);
 
     setHeroes(prev =>
-      prev.map((h, i) =>
-        i === activeHeroIndex ? { ...h, gunBullets: h.gunBullets - bulletsToShoot } : h
-      )
+      prev.map((h, i) => {
+        if (i !== activeHeroIndex) return h;
+        const newGauge = Math.min(100, h.highlightGauge + 25);
+        if (newGauge >= SHOWTIME_THRESHOLD && h.highlightGauge < SHOWTIME_THRESHOLD) {
+          audioService.playShowtimeReady();
+        }
+        return {
+          ...h,
+          gunBullets: h.gunBullets - bulletsToShoot,
+          highlightGauge: newGauge
+        };
+      })
     );
 
     const isWeak = targetEnemy.weaknesses.includes('Peluru');
     showDamageNumber(`-${totalDmg} [PELURU]`, isWeak ? 'text-red-400' : 'text-blue-300', isWeak);
-    addLog(`${activeHero.name} menembakkan ${bulletsToShoot} Jimat Peluru Perak pada ${targetEnemy.name}! (-${totalDmg} HP)`, isWeak ? 'weakness' : 'action');
+    addLog(
+      `${activeHero.name} memberondong ${bulletsToShoot} Jimat Peluru Perak pada ${targetEnemy.name}! (-${totalDmg} HP)`,
+      isWeak ? 'weakness' : 'action'
+    );
 
     applyDamageToEnemy(selectedEnemyIndex, totalDmg, 'Peluru', false, isWeak);
   };
@@ -525,15 +584,19 @@ export const BattleArena: React.FC<BattleArenaProps> = ({
       return;
     }
 
-    // Deduct cost
+    // Deduct cost & boost Showtime gauge by +25
     setHeroes(prev =>
       prev.map((h, i) => {
         if (i !== activeHeroIndex) return h;
+        const newGauge = Math.min(100, h.highlightGauge + 25);
+        if (newGauge >= SHOWTIME_THRESHOLD && h.highlightGauge < SHOWTIME_THRESHOLD) {
+          audioService.playShowtimeReady();
+        }
         return {
           ...h,
           sp: Math.max(0, h.sp - skill.spCost),
           hp: Math.max(1, h.hp - (skill.hpCost || 0)),
-          highlightGauge: Math.min(100, h.highlightGauge + 10)
+          highlightGauge: newGauge
         };
       })
     );
@@ -639,21 +702,22 @@ export const BattleArena: React.FC<BattleArenaProps> = ({
 
   // Cast Showtime / Highlight Ultimate with Ultra-Cool Cinematic Animation
   const handleShowtime = () => {
-    if (!activeSpirit || activeHero.highlightGauge < 100 || isEnemyTurn || activeSpiritAttack || showtimeCinematic) return;
+    // Requires SHOWTIME_THRESHOLD (70%) instead of 100%, and safely uses effectiveSpirit
+    if (activeHero.highlightGauge < SHOWTIME_THRESHOLD || isEnemyTurn || activeSpiritAttack || showtimeCinematic) return;
 
     const hlSkill: Skill = activeSpirit?.highlightSkill || {
       id: 'showtime_finisher',
       name: 'Puncak Penghakiman Kosmik',
       element: effectiveSpirit.element,
-      power: 280,
+      power: 320,
       spCost: 0,
       target: 'all',
       description: 'Serangan puncak gabungan manusia dan roh penjaga.'
     };
 
-    // Deduct highlight gauge
+    // Deduct highlight gauge by threshold (preserves overflow for faster subsequent use)
     setHeroes(prev =>
-      prev.map((h, i) => (i === activeHeroIndex ? { ...h, highlightGauge: 0 } : h))
+      prev.map((h, i) => (i === activeHeroIndex ? { ...h, highlightGauge: Math.max(0, h.highlightGauge - SHOWTIME_THRESHOLD) } : h))
     );
 
     addLog(`★ SHOWTIME DILEPASKAN! ${activeHero.name} & ${effectiveSpirit.name}: [${hlSkill.name}]!!`, 'highlight');
@@ -960,24 +1024,38 @@ export const BattleArena: React.FC<BattleArenaProps> = ({
                     : 'border-neutral-800 bg-[#121217]/80 hover:border-[#FF0033]'
                 } ${isHit || isPlayerHit ? 'ring-4 ring-yellow-400 animate-heavy-shake' : ''}`}
               >
-                {/* Dynamic Player Attack Impact VFX */}
+                {/* Ultra-Brutal Dynamic Player Attack Impact VFX */}
                 {isPlayerHit && (
-                  <div className="absolute inset-0 z-30 flex items-center justify-center pointer-events-none overflow-hidden rounded-lg bg-red-950/40">
+                  <div className="absolute inset-0 z-30 flex items-center justify-center pointer-events-none overflow-hidden rounded-lg bg-red-950/70 border-2 border-red-600">
                     {playerAttackVfx.type === 'melee' ? (
                       <div className="relative w-full h-full flex items-center justify-center animate-shake">
-                        <div className="absolute w-[140%] h-3 bg-gradient-to-r from-transparent via-white to-transparent transform -rotate-45 shadow-[0_0_20px_#ff0033] animate-elemental-slash" />
-                        <div className="absolute w-[140%] h-4 bg-gradient-to-r from-transparent via-red-500 to-transparent transform rotate-35 shadow-[0_0_30px_#ff0033] animate-elemental-slash" />
-                        <span className="font-bebas text-2xl font-black italic tracking-wider text-yellow-300 bg-red-600 border border-white px-2 py-0.5 skew-x-[-12deg] shadow-lg animate-bounce">
-                          {playerAttackVfx.isCrit ? 'CRITICAL SLASH!!' : 'SLASH!!'}
+                        {/* Multiple Brutal Slash Cuts */}
+                        <div className="absolute w-[150%] h-4 bg-gradient-to-r from-transparent via-white to-transparent transform -rotate-45 shadow-[0_0_25px_#ff0033] animate-elemental-slash" />
+                        <div className="absolute w-[150%] h-5 bg-gradient-to-r from-transparent via-red-600 to-transparent transform rotate-35 shadow-[0_0_35px_#dc2626] animate-elemental-slash" />
+                        <div className="absolute w-[150%] h-3 bg-gradient-to-r from-transparent via-yellow-300 to-transparent transform -rotate-12 shadow-[0_0_20px_#fde047] animate-elemental-slash" />
+                        
+                        {/* Blood & Spectral Splatters */}
+                        <div className="absolute top-2 left-4 w-3 h-3 bg-red-600 rounded-full shadow-[0_0_8px_#ff0033]" />
+                        <div className="absolute bottom-3 right-6 w-4 h-2 bg-red-700 rounded-full rotate-45 shadow-[0_0_8px_#ff0033]" />
+                        <div className="absolute top-4 right-8 w-2 h-2 bg-yellow-400 rounded-full" />
+
+                        {/* Brutal Comic Impact Banner */}
+                        <span className="relative z-10 font-bebas text-lg sm:text-2xl font-black italic tracking-wider text-yellow-300 bg-black/95 border-2 border-red-600 px-3 py-1 skew-x-[-12deg] shadow-[0_0_25px_rgba(239,68,68,0.8)] animate-bounce text-center">
+                          {playerAttackVfx.isCrit ? '★ BRUTAL CRITICAL DECAPITATE!! ★' : '★ BRUTAL TEBASAN SUKMA!! ★'}
                         </span>
                       </div>
                     ) : (
                       <div className="relative w-full h-full flex items-center justify-center animate-shake">
-                        <div className="absolute w-14 h-14 rounded-full border-2 border-dashed border-sky-400 animate-spin" />
-                        <div className="absolute w-2 h-10 bg-sky-300 shadow-[0_0_15px_#38bdf8]" />
-                        <div className="absolute w-10 h-2 bg-sky-300 shadow-[0_0_15px_#38bdf8]" />
-                        <span className="font-bebas text-2xl font-black italic tracking-wider text-black bg-sky-300 border border-white px-2 py-0.5 skew-x-[-12deg] shadow-lg animate-pulse">
-                          BANG-BANG!!
+                        {/* Gun Crosshairs & Multiple Bullet Sparks */}
+                        <div className="absolute w-16 h-16 rounded-full border-2 border-dashed border-sky-400 animate-spin" />
+                        <div className="absolute w-2 h-14 bg-sky-300 shadow-[0_0_20px_#38bdf8]" />
+                        <div className="absolute w-14 h-2 bg-sky-300 shadow-[0_0_20px_#38bdf8]" />
+                        {/* Bullet Puncture Marks */}
+                        <div className="absolute top-3 left-6 w-3 h-3 rounded-full bg-black border border-sky-400 shadow-[0_0_10px_#38bdf8]" />
+                        <div className="absolute bottom-4 right-8 w-3 h-3 rounded-full bg-black border border-sky-400 shadow-[0_0_10px_#38bdf8]" />
+
+                        <span className="relative z-10 font-bebas text-lg sm:text-2xl font-black italic tracking-wider text-black bg-sky-300 border-2 border-white px-3 py-1 skew-x-[-12deg] shadow-[0_0_25px_rgba(56,189,248,0.8)] animate-pulse text-center">
+                          ★ BRUTAL BULLET SHRED!! ★
                         </span>
                       </div>
                     )}
@@ -1071,22 +1149,33 @@ export const BattleArena: React.FC<BattleArenaProps> = ({
             const isActive = activeHeroIndex === idx && !isEnemyTurn;
             const isFainted = hero.hp <= 0;
 
+            const isShowtimeReady = hero.highlightGauge >= SHOWTIME_THRESHOLD;
+
             return (
               <div
                 key={hero.id}
                 className={`relative transition-all p-2 sm:p-2.5 rounded-lg border-2 min-w-[125px] sm:min-w-[160px] md:min-w-[175px] shrink-0 ${
                   isFainted
                     ? 'border-neutral-800 bg-[#0D0D11]/60 opacity-40'
+                    : isShowtimeReady && isActive
+                    ? 'border-yellow-400 border-r-4 sm:border-r-8 bg-[#1f1214] ring-2 ring-yellow-400 shadow-[0_0_15px_rgba(234,179,8,0.4)] -translate-y-0.5 sm:-translate-y-1'
                     : isActive
                     ? 'border-[#FF0033] border-r-4 sm:border-r-8 bg-[#151116] p5-shadow-red -translate-y-0.5 sm:-translate-y-1 ring-1 ring-[#FF0033]'
+                    : isShowtimeReady
+                    ? 'border-amber-500/80 bg-[#161214] ring-1 ring-amber-400/50'
                     : 'border-neutral-800 bg-[#121217]'
                 }`}
               >
                 <div className="flex items-center gap-1.5 sm:gap-2 mb-1">
                   <AnimePortrait characterId={hero.id} emotion={hero.isDown ? 'fear' : 'determined'} size="sm" />
                   <div className="overflow-hidden">
-                    <div className="font-bebas text-sm sm:text-base font-bold text-white tracking-wide truncate">
-                      {hero.name.split(' ')[0]}
+                    <div className="font-bebas text-sm sm:text-base font-bold text-white tracking-wide truncate flex items-center gap-1">
+                      <span>{hero.name.split(' ')[0]}</span>
+                      {isShowtimeReady && (
+                        <span className="text-[8px] font-mono font-black text-black bg-yellow-400 px-1 rounded animate-pulse">
+                          SHOWTIME
+                        </span>
+                      )}
                     </div>
                     <div className="text-[9px] sm:text-[10px] text-neutral-400 font-mono tracking-wider uppercase truncate">
                       {hero.alias}
@@ -1121,11 +1210,17 @@ export const BattleArena: React.FC<BattleArenaProps> = ({
                   {/* Highlight Gauge */}
                   <div className="flex items-center justify-between text-yellow-400 text-[9px] sm:text-[10px] font-bold">
                     <span>SHOWTIME</span>
-                    <span>{hero.highlightGauge}%</span>
+                    <span className={isShowtimeReady ? 'text-yellow-300 font-black animate-pulse' : ''}>
+                      {isShowtimeReady ? '★ READY!' : `${hero.highlightGauge}%`}
+                    </span>
                   </div>
-                  <div className="w-full bg-neutral-900 h-1 rounded-full overflow-hidden border border-neutral-800">
+                  <div className="w-full bg-neutral-900 h-1.5 rounded-full overflow-hidden border border-neutral-800">
                     <div
-                      className="bg-yellow-400 h-full transition-all"
+                      className={`h-full transition-all duration-300 ${
+                        isShowtimeReady
+                          ? 'bg-gradient-to-r from-amber-400 via-yellow-300 to-red-500 animate-pulse shadow-[0_0_8px_#f59e0b]'
+                          : 'bg-yellow-400'
+                      }`}
                       style={{ width: `${hero.highlightGauge}%` }}
                     />
                   </div>
@@ -1141,14 +1236,14 @@ export const BattleArena: React.FC<BattleArenaProps> = ({
             <div>
               {/* MOBILE DEDICATED THUMB CONTROLS (Easily reachable on phone screens) */}
               <div className="md:hidden w-full space-y-2">
-                {/* Showtime Banner on Mobile when 100% */}
-                {activeHero.highlightGauge >= 100 && (
+                {/* Showtime Banner on Mobile when gauge >= SHOWTIME_THRESHOLD */}
+                {activeHero.highlightGauge >= SHOWTIME_THRESHOLD && (
                   <button
                     disabled={isEnemyTurn}
                     onClick={handleShowtime}
-                    className="w-full bg-[#FF0033] hover:bg-red-600 text-yellow-300 border-2 border-yellow-300 font-bebas text-lg sm:text-xl py-2 rounded-lg font-black tracking-widest animate-pulse shadow-lg flex items-center justify-center gap-2 cursor-pointer disabled:opacity-40"
+                    className="w-full bg-gradient-to-r from-red-600 via-[#FF0033] to-amber-500 hover:brightness-110 text-yellow-200 border-2 border-yellow-300 font-bebas text-lg sm:text-xl py-2 rounded-lg font-black tracking-widest animate-pulse shadow-[0_0_20px_rgba(255,0,51,0.6)] flex items-center justify-center gap-2 cursor-pointer disabled:opacity-40"
                   >
-                    <Sparkles className="w-5 h-5 text-yellow-300" />
+                    <Sparkles className="w-5 h-5 text-yellow-300 animate-spin-slow" />
                     <span>★ AKTIFKAN SHOWTIME! ★</span>
                   </button>
                 )}
@@ -1299,16 +1394,16 @@ export const BattleArena: React.FC<BattleArenaProps> = ({
                 </button>
 
                 {/* SHOWTIME / HIGHLIGHT BUTTON */}
-                {activeHero.highlightGauge >= 100 && (
+                {activeHero.highlightGauge >= SHOWTIME_THRESHOLD && (
                   <button
                     disabled={isEnemyTurn}
                     onClick={handleShowtime}
                     className="relative transform -rotate-2 cursor-pointer animate-pulse"
                   >
-                    <div className="absolute -inset-1 bg-yellow-300 skew-x-[-12deg]" />
+                    <div className="absolute -inset-1 bg-yellow-300 skew-x-[-12deg] shadow-[0_0_15px_#fde047]" />
                     <div className="relative bg-[#FF0033] border-2 border-yellow-300 px-4 py-2 skew-x-[-12deg]">
-                      <span className="block transform skew-x-[12deg] text-base font-black text-yellow-300 italic tracking-wider flex items-center gap-1">
-                        <Sparkles className="w-4 h-4" />
+                      <span className="block transform skew-x-[12deg] text-base font-black text-yellow-300 italic tracking-wider flex items-center gap-1.5">
+                        <Sparkles className="w-4 h-4 text-yellow-300 animate-spin-slow" />
                         <span>SHOWTIME!</span>
                       </span>
                     </div>

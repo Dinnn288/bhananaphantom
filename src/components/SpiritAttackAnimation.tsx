@@ -1,6 +1,8 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Hero, SpiritCompanion, Skill, ElementType } from '../types';
 import { AnimePortrait } from './AnimePortrait';
+import { MaskRipCutin } from './MaskRipCutin';
+import { audioService } from '../services/audioService';
 import { Flame, Sparkles, Zap, Wind, Shield, Skull, Crosshair, Sword } from 'lucide-react';
 
 interface SpiritAttackAnimationProps {
@@ -20,17 +22,31 @@ export const SpiritAttackAnimation: React.FC<SpiritAttackAnimationProps> = ({
   isShowtime = false,
   onComplete
 }) => {
+  const [phase, setPhase] = useState<'mask_rip' | 'elemental_strike'>('mask_rip');
   const onCompleteRef = useRef(onComplete);
   onCompleteRef.current = onComplete;
 
   useEffect(() => {
-    const timer = setTimeout(() => {
+    // 1. Play Persona Mask Rip audio on invocation
+    audioService.playMaskRip();
+
+    // 2. Transition from Mask Rip animation to Elemental Spirit Strike
+    const ripTimer = setTimeout(() => {
+      setPhase('elemental_strike');
+      audioService.playCritical();
+    }, 540);
+
+    // 3. Complete overall animation cleanly
+    const finishTimer = setTimeout(() => {
       if (onCompleteRef.current) {
         onCompleteRef.current();
       }
-    }, isShowtime ? 1400 : 950);
+    }, isShowtime ? 1750 : 1350);
 
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(ripTimer);
+      clearTimeout(finishTimer);
+    };
   }, [isShowtime]);
 
   // Elemental theme configurations
@@ -126,6 +142,17 @@ export const SpiritAttackAnimation: React.FC<SpiritAttackAnimationProps> = ({
   const skillName = skill?.name || (isShowtime ? 'PUNCAK KEKUATAN KOSMIK' : 'SERANGAN JIWA');
   const skillPower = skill?.power ?? 60;
   const skillTarget = skill?.target || 'single';
+
+  if (phase === 'mask_rip') {
+    return (
+      <MaskRipCutin
+        hero={hero}
+        heroName={resolvedHeroName}
+        spirit={spirit}
+        skill={skill}
+      />
+    );
+  }
 
   return (
     <div className="absolute inset-0 z-40 overflow-hidden pointer-events-none flex flex-col justify-between select-none">

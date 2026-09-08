@@ -120,7 +120,7 @@ export const STORY_CHAPTERS: StoryChapter[] = [
     title: 'Bab 1: Simfoni Darah & Cermin Melati',
     subtitle: 'Arwah Sang Pianis 1995 & Cermin Es Maya Kirana',
     startNodeId: 'node_c1_01',
-    isUnlocked: false,
+    isUnlocked: true,
     isCompleted: false,
     bossEnemyId: 'boss_clara',
     summary: 'Menyelidiki ruang musik angker bersama Wakil Ketua OSIS Maya Kirana. Menghadapi Madame Clara, membangkitkan roh Nyai Candra Kirana, dan menemukan bukti perjanjian darah yayasan 1972.'
@@ -131,7 +131,7 @@ export const STORY_CHAPTERS: StoryChapter[] = [
     title: 'Bab 2: Anatomi 33 Tumbal & Kamar Jenazah',
     subtitle: 'Horor UKS Bawah Tanah & Guntur Silat Bagas',
     startNodeId: 'node_c2_01',
-    isUnlocked: false,
+    isUnlocked: true,
     isCompleted: false,
     bossEnemyId: 'boss_anatomi',
     summary: 'Menerobos lorong UKS dan Laboratorium Biologi. Menyelamatkan atlet silat Bagas Perkasa, membangkitkan Bharata Petir, mengalahkan manekin terkutuk Kala Belatung, dan membongkar toples 33 darah tumbal.'

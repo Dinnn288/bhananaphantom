@@ -1550,3 +1550,70 @@ export const applyAwakenRankToSpirit = (spirit: SpiritCompanion, targetRank: num
     bonusDef: Math.round(baseDef * tier.statMultiplier) + tier.bonusDef
   };
 };
+
+/**
+ * Menghitung biaya token peningkatan level roh berdasarkan tingkat kelangkaan (Rarity) dan Level saat ini.
+ * Roh SSR berstatus Dewa Roh / Overpowered membutuhkan persembahan energi spiritual yang jauh lebih tinggi.
+ */
+export const getSpiritUpgradeCost = (spirit: SpiritCompanion): number => {
+  const currentLevel = Math.max(1, spirit.level || 1);
+  switch (spirit.rarity) {
+    case 'SSR':
+      // SSR: Biaya dasar tinggi & penskalaan per level agresif
+      // Level 1: 100 + 35 = 135 Token
+      // Level 2: 100 + 70 = 170 Token
+      // Level 5: 100 + 175 = 275 Token
+      // Level 10: 100 + 350 = 450 Token
+      return 100 + currentLevel * 35;
+    case 'SR':
+      // SR: Biaya tingkat menengah
+      // Level 1: 45 + 15 = 60 Token
+      // Level 2: 45 + 30 = 75 Token
+      // Level 5: 45 + 75 = 120 Token
+      // Level 10: 45 + 150 = 195 Token
+      return 45 + currentLevel * 15;
+    case 'R':
+    default:
+      // R: Biaya ekonomis untuk pemula
+      // Level 1: 20 + 5 = 25 Token
+      // Level 2: 20 + 10 = 30 Token
+      // Level 5: 20 + 25 = 45 Token
+      // Level 10: 20 + 50 = 70 Token
+      return 20 + currentLevel * 5;
+  }
+};
+
+/**
+ * Menghitung pertambahan stat per level up berdasarkan kelangkaan roh.
+ * Roh SSR memberikan pertambahan stat paling masif untuk sebanding dengan biaya upgrade-nya.
+ */
+export const getSpiritUpgradeStatGain = (spirit: SpiritCompanion): { hp: number; sp: number; atk: number; def: number } => {
+  switch (spirit.rarity) {
+    case 'SSR':
+      return { hp: 65, sp: 24, atk: 16, def: 11 };
+    case 'SR':
+      return { hp: 38, sp: 14, atk: 9, def: 6 };
+    case 'R':
+    default:
+      return { hp: 22, sp: 8, atk: 5, def: 3 };
+  }
+};
+
+/**
+ * Menghitung biaya token kebangkitan bintang (Awakening ★1 ke ★5) disesuaikan dengan kelangkaan roh.
+ * SSR membutuhkan biaya persembahan bintang 2.5x lipat dari roh standar.
+ */
+export const getSpiritAwakenCost = (spirit: SpiritCompanion, nextRank: number): number => {
+  const baseTier = AWAKEN_TIERS[nextRank];
+  const baseCost = baseTier ? baseTier.costTokens : 40;
+  switch (spirit.rarity) {
+    case 'SSR':
+      return Math.round(baseCost * 2.5); // 100, 125, 150, 200 token
+    case 'SR':
+      return Math.round(baseCost * 1.6); // 64, 80, 96, 128 token
+    case 'R':
+    default:
+      return baseCost; // 40, 50, 60, 80 token
+  }
+};
+

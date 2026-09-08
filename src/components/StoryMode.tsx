@@ -44,7 +44,7 @@ export const StoryMode: React.FC<StoryModeProps> = ({
   const [viewMode, setViewMode] = useState<'reading' | 'chapter_select' | 'season2_preview'>('reading');
   const [dialogueHistory, setDialogueHistory] = useState<{ speaker: string; text: string; role?: string }[]>([]);
   const [showLogModal, setShowLogModal] = useState<boolean>(false);
-  const [unlockedChapters, setUnlockedChapters] = useState<string[]>(['chap_0']);
+  const [unlockedChapters, setUnlockedChapters] = useState<string[]>(['chap_0', 'chap_1', 'chap_2']);
 
   // Handle post-battle victory resumption
   useEffect(() => {
@@ -512,6 +512,20 @@ export const StoryMode: React.FC<StoryModeProps> = ({
             <span className="transform skew-x-[10deg] font-mono uppercase font-bold text-[11px]">INTEL S2</span>
           </button>
 
+          {/* Quick Bab 2 Shortcut Button */}
+          {activeChapterId !== 'chap_2' && (
+            <button
+              onClick={() => {
+                const ch2 = STORY_CHAPTERS.find(c => c.id === 'chap_2');
+                if (ch2) startChapter(ch2);
+              }}
+              className="text-xs text-yellow-300 hover:text-black hover:bg-yellow-400 px-3 py-1.5 bg-yellow-950/80 border border-yellow-500 skew-x-[-10deg] flex items-center gap-1.5 cursor-pointer shadow-lg transition-colors"
+            >
+              <Swords className="w-3.5 h-3.5 text-yellow-400 transform skew-x-[10deg]" />
+              <span className="transform skew-x-[10deg] font-mono uppercase font-bold">MAIN BAB 2</span>
+            </button>
+          )}
+
           {/* Chapter Select Button */}
           <button
             onClick={() => setViewMode('chapter_select')}
@@ -523,42 +537,46 @@ export const StoryMode: React.FC<StoryModeProps> = ({
         </div>
       </div>
 
-      {/* Center Stage: Character Visual Portrait Display */}
-      <div className="relative z-10 flex-1 flex items-end justify-center sm:justify-start px-8 pb-2">
+      {/* Center Stage: Character Visual Portrait Display (Clean & Unobstructed) */}
+      <div className="relative z-10 flex-1 flex items-end justify-center sm:justify-start px-6 sm:px-12 pb-4 pointer-events-none">
         <div className="flex items-end gap-6 max-w-2xl">
-          <AnimePortrait
-            characterId={getSpeakerAvatarKey(currentNode.speaker)}
-            emotion={currentNode.emotion || 'normal'}
-            size="xl"
-            isCutin
-          />
-
-          {/* Location Badge */}
-          <div className="hidden sm:block mb-4">
-            <span className="bg-black/90 text-neutral-300 border-2 border-white px-3.5 py-1 text-xs font-mono skew-x-[-10deg] flex items-center gap-1.5 shadow-lg">
-              <Compass className="w-3.5 h-3.5 text-[#FF0033] transform skew-x-[10deg]" />
-              <span className="transform skew-x-[10deg] uppercase font-bold tracking-wider">
-                LOKASI: {currentNode.backgroundStyle.toUpperCase().replace('_', ' ')}
-              </span>
-            </span>
+          <div className="shrink-0 drop-shadow-[0_10px_25px_rgba(0,0,0,0.9)]">
+            <AnimePortrait
+              characterId={getSpeakerAvatarKey(currentNode.speaker)}
+              emotion={currentNode.emotion || 'normal'}
+              size="xl"
+              isCutin
+            />
           </div>
         </div>
       </div>
 
       {/* Bottom Dialogue Box & Choices */}
-      <div className="relative z-20 p-5 sm:p-6 bg-black/95 border-t-4 border-[#FF0033] shadow-2xl">
-        {/* Floating Slanted Speaker Name Tag */}
-        <div className="absolute -top-5 left-6 bg-[#FF0033] text-black px-4 py-1 text-base font-black italic skew-x-[-12deg] shadow-xl border-2 border-black flex items-center gap-2">
-          <span className="uppercase tracking-wider">{currentNode.speaker}</span>
-          {currentNode.speakerRole && (
-            <span className="text-[11px] font-mono font-bold bg-black text-white px-1.5 py-0.2">
-              {currentNode.speakerRole}
+      <div className="relative z-20 p-4 sm:p-6 bg-black/95 border-t-4 border-[#FF0033] shadow-[0_-10px_35px_rgba(0,0,0,0.8)]">
+        {/* Speaker Name Bar (Inside Dialogue Box: 100% Guaranteed NOT to overlap the face) */}
+        <div className="flex flex-wrap items-center justify-between gap-2 mb-3 pb-2 border-b border-neutral-800">
+          <div className="inline-flex items-center gap-2 bg-[#FF0033] text-black px-4 py-1 skew-x-[-12deg] shadow-lg border border-black">
+            <span className="uppercase tracking-wider transform skew-x-[12deg] font-bebas text-lg leading-none font-black">
+              {currentNode.speaker}
             </span>
-          )}
+            {currentNode.speakerRole && (
+              <span className="text-[10px] font-mono font-bold bg-black text-white px-2 py-0.5 rounded transform skew-x-[12deg]">
+                {currentNode.speakerRole}
+              </span>
+            )}
+          </div>
+
+          {/* Location Badge cleanly placed in dialogue bar */}
+          <div className="flex items-center gap-1.5 text-neutral-400 text-xs font-mono bg-neutral-900/90 border border-neutral-800 px-3 py-1">
+            <Compass className="w-3.5 h-3.5 text-[#FF0033]" />
+            <span className="uppercase font-bold tracking-wider text-[11px]">
+              LOKASI: {currentNode.backgroundStyle.toUpperCase().replace('_', ' ')}
+            </span>
+          </div>
         </div>
 
         {/* Dialogue Text */}
-        <div className="min-h-[75px] text-neutral-100 text-sm sm:text-base leading-relaxed font-sans mb-4 pt-2 pl-4 border-l-4 border-[#FF0033]">
+        <div className="min-h-[75px] text-neutral-100 text-sm sm:text-base leading-relaxed font-sans mb-4 pt-1 pl-4 border-l-4 border-[#FF0033]">
           <p className="italic text-neutral-200">
             {currentNode.text}
           </p>
