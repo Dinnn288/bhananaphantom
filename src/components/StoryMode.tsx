@@ -472,7 +472,7 @@ export const StoryMode: React.FC<StoryModeProps> = ({
   // VIEW 3: READING / VISUAL NOVEL VIEW
   // ==========================================
   return (
-    <div className="relative w-full h-[640px] bg-[#0A0A0A] border-4 border-[#FF0033] rounded-xl overflow-hidden flex flex-col justify-between shadow-2xl select-none artistic-radial-bg">
+    <div className="relative w-full min-h-[540px] h-[640px] max-h-[88vh] sm:max-h-none sm:h-[650px] bg-[#0A0A0A] border-4 border-[#FF0033] rounded-xl overflow-hidden flex flex-col shadow-2xl select-none artistic-radial-bg">
       {/* Repeating Red Background Pattern and Atmosphere */}
       <div className="absolute inset-0 artistic-pattern opacity-10 pointer-events-none z-0" />
       <div
@@ -483,24 +483,25 @@ export const StoryMode: React.FC<StoryModeProps> = ({
       <div className="absolute inset-0 bg-halftone pointer-events-none opacity-20 z-0" />
 
       {/* Top Header Controls */}
-      <div className="relative z-10 p-4 flex items-center justify-between border-b-2 border-[#FF0033]/50 bg-[#0A0A0A]/85 backdrop-blur-md">
-        <div className="flex items-center gap-3">
-          <span className="bg-[#FF0033] text-black font-black text-xs px-3 py-1 skew-x-[-12deg] tracking-widest uppercase italic">
-            SEASON 1 &bull; {activeChapter.title.toUpperCase()}
+      <div className="relative z-10 px-3 sm:px-4 py-2.5 sm:py-3 flex items-center justify-between border-b-2 border-[#FF0033]/50 bg-[#0A0A0A]/90 backdrop-blur-md shrink-0">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+          <span className="bg-[#FF0033] text-black font-black text-[10px] sm:text-xs px-2.5 sm:px-3 py-0.5 sm:py-1 skew-x-[-12deg] tracking-widest uppercase italic truncate">
+            {activeChapter.title.toUpperCase()}
           </span>
-          <span className="font-mono text-xs text-amber-300 hidden sm:inline italic">
+          <span className="font-mono text-xs text-amber-300 hidden md:inline italic truncate">
             {activeChapter.subtitle}
           </span>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
           {/* Dialogue Log Button */}
           <button
             onClick={() => setShowLogModal(true)}
-            className="text-xs text-neutral-300 hover:text-white px-2.5 py-1.5 bg-[#141418] border border-neutral-700 hover:border-[#FF0033] skew-x-[-10deg] flex items-center gap-1 cursor-pointer"
+            className="text-xs text-neutral-300 hover:text-white px-2 sm:px-2.5 py-1 sm:py-1.5 bg-[#141418] border border-neutral-700 hover:border-[#FF0033] skew-x-[-10deg] flex items-center gap-1 cursor-pointer"
+            title="Buka Riwayat Dialog"
           >
             <History className="w-3.5 h-3.5 text-amber-400 transform skew-x-[10deg]" />
-            <span className="transform skew-x-[10deg] font-mono uppercase font-bold text-[11px]">LOG</span>
+            <span className="transform skew-x-[10deg] font-mono uppercase font-bold text-[10px] sm:text-[11px]">LOG</span>
           </button>
 
           {/* Season 2 Intel Teaser Shortcut */}
@@ -519,80 +520,103 @@ export const StoryMode: React.FC<StoryModeProps> = ({
                 const ch2 = STORY_CHAPTERS.find(c => c.id === 'chap_2');
                 if (ch2) startChapter(ch2);
               }}
-              className="text-xs text-yellow-300 hover:text-black hover:bg-yellow-400 px-3 py-1.5 bg-yellow-950/80 border border-yellow-500 skew-x-[-10deg] flex items-center gap-1.5 cursor-pointer shadow-lg transition-colors"
+              className="text-xs text-yellow-300 hover:text-black hover:bg-yellow-400 px-2 sm:px-3 py-1 sm:py-1.5 bg-yellow-950/80 border border-yellow-500 skew-x-[-10deg] flex items-center gap-1 cursor-pointer shadow-lg transition-colors"
             >
               <Swords className="w-3.5 h-3.5 text-yellow-400 transform skew-x-[10deg]" />
-              <span className="transform skew-x-[10deg] font-mono uppercase font-bold">MAIN BAB 2</span>
+              <span className="transform skew-x-[10deg] font-mono uppercase font-bold text-[10px] sm:text-xs">BAB 2</span>
             </button>
           )}
 
           {/* Chapter Select Button */}
           <button
             onClick={() => setViewMode('chapter_select')}
-            className="text-xs text-neutral-200 hover:text-white px-3 py-1.5 bg-[#141418] border border-neutral-700 hover:border-[#FF0033] skew-x-[-10deg] flex items-center gap-1.5 cursor-pointer"
+            className="text-xs text-neutral-200 hover:text-white px-2.5 sm:px-3 py-1 sm:py-1.5 bg-[#141418] border border-neutral-700 hover:border-[#FF0033] skew-x-[-10deg] flex items-center gap-1.5 cursor-pointer"
           >
             <BookOpen className="w-3.5 h-3.5 text-[#FF0033] transform skew-x-[10deg]" />
-            <span className="transform skew-x-[10deg] font-mono uppercase font-bold">DAFTAR BAB</span>
+            <span className="transform skew-x-[10deg] font-mono uppercase font-bold text-[10px] sm:text-xs">BAB</span>
           </button>
         </div>
       </div>
 
-      {/* Center Stage: Character Visual Portrait Display (Clean & Unobstructed) */}
-      <div className="relative z-10 flex-1 flex items-end justify-center sm:justify-start px-6 sm:px-12 pb-4 pointer-events-none">
+      {/* Center Stage: Character Visual Portrait Display (Responsive & Unobstructed) */}
+      <div className="relative z-10 flex-1 min-h-0 flex items-end justify-center sm:justify-start px-4 sm:px-12 pb-1 sm:pb-3 pointer-events-none overflow-hidden">
         <div className="flex items-end gap-6 max-w-2xl">
           <div className="shrink-0 drop-shadow-[0_10px_25px_rgba(0,0,0,0.9)]">
-            <AnimePortrait
-              characterId={getSpeakerAvatarKey(currentNode.speaker)}
-              emotion={currentNode.emotion || 'normal'}
-              size="xl"
-              isCutin
-            />
+            {/* Full size on sm screens and above */}
+            <div className="hidden sm:block">
+              <AnimePortrait
+                characterId={getSpeakerAvatarKey(currentNode.speaker)}
+                emotion={currentNode.emotion || 'normal'}
+                size="xl"
+                isCutin
+              />
+            </div>
+            {/* Adaptive compact size on mobile so text & actions have maximum room */}
+            <div className="block sm:hidden">
+              <AnimePortrait
+                characterId={getSpeakerAvatarKey(currentNode.speaker)}
+                emotion={currentNode.emotion || 'normal'}
+                size="md"
+                isCutin
+              />
+            </div>
           </div>
         </div>
       </div>
 
       {/* Bottom Dialogue Box & Choices */}
-      <div className="relative z-20 p-4 sm:p-6 bg-black/95 border-t-4 border-[#FF0033] shadow-[0_-10px_35px_rgba(0,0,0,0.8)]">
+      <div 
+        onClick={(e) => {
+          // If in autoNext mode and clicked on dialogue container itself (not a button), advance to next
+          if (currentNode.autoNext && (e.target as HTMLElement).tagName !== 'BUTTON' && !(e.target as HTMLElement).closest('button')) {
+            advanceToNode(currentNode.autoNext);
+          }
+        }}
+        className={`relative z-20 p-3.5 sm:p-5 bg-black/95 border-t-4 border-[#FF0033] shadow-[0_-10px_35px_rgba(0,0,0,0.8)] flex flex-col shrink-0 ${currentNode.autoNext ? 'cursor-pointer' : ''}`}
+      >
         {/* Speaker Name Bar (Inside Dialogue Box: 100% Guaranteed NOT to overlap the face) */}
-        <div className="flex flex-wrap items-center justify-between gap-2 mb-3 pb-2 border-b border-neutral-800">
-          <div className="inline-flex items-center gap-2 bg-[#FF0033] text-black px-4 py-1 skew-x-[-12deg] shadow-lg border border-black">
-            <span className="uppercase tracking-wider transform skew-x-[12deg] font-bebas text-lg leading-none font-black">
+        <div className="flex items-center justify-between gap-2 mb-2 pb-1.5 border-b border-neutral-800 shrink-0">
+          <div className="inline-flex items-center gap-1.5 sm:gap-2 bg-[#FF0033] text-black px-3 sm:px-4 py-0.5 sm:py-1 skew-x-[-12deg] shadow-lg border border-black">
+            <span className="uppercase tracking-wider transform skew-x-[12deg] font-bebas text-base sm:text-lg leading-none font-black">
               {currentNode.speaker}
             </span>
             {currentNode.speakerRole && (
-              <span className="text-[10px] font-mono font-bold bg-black text-white px-2 py-0.5 rounded transform skew-x-[12deg]">
+              <span className="text-[9px] sm:text-[10px] font-mono font-bold bg-black text-white px-1.5 sm:px-2 py-0.5 rounded transform skew-x-[12deg]">
                 {currentNode.speakerRole}
               </span>
             )}
           </div>
 
           {/* Location Badge cleanly placed in dialogue bar */}
-          <div className="flex items-center gap-1.5 text-neutral-400 text-xs font-mono bg-neutral-900/90 border border-neutral-800 px-3 py-1">
-            <Compass className="w-3.5 h-3.5 text-[#FF0033]" />
-            <span className="uppercase font-bold tracking-wider text-[11px]">
-              LOKASI: {currentNode.backgroundStyle.toUpperCase().replace('_', ' ')}
+          <div className="flex items-center gap-1 text-neutral-400 text-[10px] sm:text-xs font-mono bg-neutral-900/90 border border-neutral-800 px-2 sm:px-3 py-0.5 sm:py-1">
+            <Compass className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[#FF0033]" />
+            <span className="uppercase font-bold tracking-wider truncate max-w-[130px] sm:max-w-none">
+              {currentNode.backgroundStyle.replace('_', ' ')}
             </span>
           </div>
         </div>
 
-        {/* Dialogue Text */}
-        <div className="min-h-[75px] text-neutral-100 text-sm sm:text-base leading-relaxed font-sans mb-4 pt-1 pl-4 border-l-4 border-[#FF0033]">
-          <p className="italic text-neutral-200">
+        {/* Dialogue Text (Scrollable if very long on mobile, never clipping actions!) */}
+        <div className="min-h-[48px] max-h-[110px] sm:max-h-[160px] overflow-y-auto pr-1.5 custom-scrollbar text-neutral-100 text-xs sm:text-base leading-relaxed font-sans mb-2 sm:mb-3 pt-0.5 pl-3 sm:pl-4 border-l-4 border-[#FF0033]">
+          <p className="italic text-neutral-200 select-text">
             {currentNode.text}
           </p>
         </div>
 
-        {/* Interactive Choices or Next Prompt */}
-        <div className="flex flex-wrap items-center gap-3 justify-end">
+        {/* Interactive Choices or Next Prompt (Always 100% accessible, shrink-0, finger-friendly) */}
+        <div className="shrink-0 z-30 flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-3 justify-end pt-2 border-t border-neutral-800/80">
           {currentNode.choices && currentNode.choices.length > 0 ? (
             currentNode.choices.map((choice, idx) => (
               <button
                 key={idx}
-                onClick={() => advanceToNode(choice.nextNodeId)}
-                className="relative transform -rotate-1 group cursor-pointer"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  advanceToNode(choice.nextNodeId);
+                }}
+                className="w-full sm:w-auto relative transform -rotate-1 group cursor-pointer"
               >
                 <div className="absolute -inset-1 bg-white skew-x-[-10deg] opacity-0 group-hover:opacity-100 transition-opacity" />
-                <div className="relative bg-[#141418] group-hover:bg-[#FF0033] text-white group-hover:text-black font-bebas text-base sm:text-lg px-4 py-2 border-2 border-[#FF0033] group-hover:border-black skew-x-[-10deg] transition-colors shadow-lg">
+                <div className="relative bg-[#141418] group-hover:bg-[#FF0033] text-white group-hover:text-black font-bebas text-sm sm:text-lg px-4 py-2 border-2 border-[#FF0033] group-hover:border-black skew-x-[-10deg] transition-colors shadow-lg flex items-center justify-center text-center">
                   <span className="block transform skew-x-[10deg] italic uppercase font-bold">
                     &gt; {choice.text}
                   </span>
@@ -600,51 +624,59 @@ export const StoryMode: React.FC<StoryModeProps> = ({
               </button>
             ))
           ) : currentNode.autoNext ? (
-            <button
-              onClick={() => advanceToNode(currentNode.autoNext!)}
-              className="relative transform -rotate-2 group cursor-pointer"
-            >
-              <div className="absolute -inset-1 bg-white skew-x-[-12deg]" />
-              <div className="relative bg-[#FF0033] group-hover:bg-white text-white group-hover:text-black font-bebas text-lg px-7 py-2 skew-x-[-12deg] border-2 border-black transition-colors shadow-xl flex items-center gap-1.5">
-                <span className="block transform skew-x-[12deg] font-black italic uppercase">LANJUT</span>
-                <ChevronRight className="w-5 h-5 transform skew-x-[12deg]" />
-              </div>
-            </button>
+            <div className="w-full sm:w-auto flex items-center gap-2 justify-between sm:justify-end">
+              <span className="text-[10px] font-mono text-neutral-400 block sm:hidden italic">
+                (Ketuk layar / tombol untuk lanjut)
+              </span>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  advanceToNode(currentNode.autoNext!);
+                }}
+                className="w-full sm:w-auto relative transform -rotate-1 group cursor-pointer"
+              >
+                <div className="absolute -inset-1 bg-white skew-x-[-12deg]" />
+                <div className="relative bg-[#FF0033] group-hover:bg-white text-white group-hover:text-black font-bebas text-base sm:text-lg px-6 py-2 skew-x-[-12deg] border-2 border-black transition-colors shadow-xl flex items-center justify-center gap-2">
+                  <span className="block transform skew-x-[12deg] font-black italic uppercase tracking-wider">
+                    LANJUT
+                  </span>
+                  <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 transform skew-x-[12deg]" />
+                </div>
+              </button>
+            </div>
           ) : currentNode.triggerBattleEnemyId ? (() => {
             const enemy = ALL_ENEMIES[currentNode.triggerBattleEnemyId!];
             const isLevelGated = enemy && enemy.minPlayerLevel && playerLevel < enemy.minPlayerLevel;
 
             if (isLevelGated) {
               return (
-                <div className="flex flex-col items-center gap-2 bg-red-950/90 border-2 border-red-500 rounded-xl p-4 shadow-2xl max-w-lg">
-                  <div className="flex items-center gap-2 text-red-400 font-bebas text-xl">
-                    <ShieldAlert className="w-5 h-5 text-red-500 animate-bounce" />
+                <div className="w-full flex flex-col items-center gap-1.5 bg-red-950/90 border-2 border-red-500 rounded-lg p-2.5 sm:p-4 shadow-2xl max-w-lg">
+                  <div className="flex items-center gap-2 text-red-400 font-bebas text-base sm:text-xl">
+                    <ShieldAlert className="w-4 h-4 sm:w-5 sm:h-5 text-red-500 animate-bounce" />
                     <span>BATASAN LEVEL BELUM TERCAPAI!</span>
                   </div>
-                  <p className="text-xs font-mono text-neutral-300 text-center leading-relaxed">
-                    Roh Boss <span className="text-yellow-400 font-bold">{enemy?.name}</span> memancarkan aura kutukan yang terlalu pekat! Diperlukan minimal <span className="text-red-400 font-bold">Level {enemy?.minPlayerLevel}</span> untuk menantang pertarungan ini.
+                  <p className="text-[11px] sm:text-xs font-mono text-neutral-300 text-center leading-tight">
+                    Roh Boss <span className="text-yellow-400 font-bold">{enemy?.name}</span> memancarkan aura kutukan yang terlalu pekat! Diperlukan minimal <span className="text-red-400 font-bold">Level {enemy?.minPlayerLevel}</span>.
                   </p>
-                  <div className="flex items-center gap-3 text-xs font-mono bg-black/60 px-3 py-1.5 rounded border border-red-900/60">
-                    <span className="text-neutral-400">Level Anda Saat Ini: <strong className="text-white">LV.{playerLevel}</strong></span>
-                    <span className="text-red-400 font-bold">Syarat Minimal: LV.{enemy?.minPlayerLevel}</span>
+                  <div className="flex items-center gap-3 text-[10px] sm:text-xs font-mono bg-black/60 px-2.5 py-1 rounded border border-red-900/60">
+                    <span className="text-neutral-400">Level Anda: <strong className="text-white">LV.{playerLevel}</strong></span>
+                    <span className="text-red-400 font-bold">Syarat: LV.{enemy?.minPlayerLevel}</span>
                   </div>
-                  <p className="text-[11px] font-mono text-neutral-400 italic text-center">
-                    Tingkatkan level di Arena Bertarung atau kuatkan Roh di Kuil Penguatan terlebih dahulu.
-                  </p>
                 </div>
               );
             }
 
             return (
               <button
-                onClick={() => {
+                onClick={(e) => {
+                  e.stopPropagation();
                   if (enemy) onTriggerBattle(enemy, currentNode.autoNext || currentNode.choices?.[0]?.nextNodeId);
                 }}
-                className="relative transform -rotate-2 cursor-pointer animate-pulse"
+                className="w-full sm:w-auto relative transform -rotate-1 cursor-pointer animate-pulse"
               >
                 <div className="absolute -inset-1.5 bg-yellow-300 skew-x-[-12deg]" />
-                <div className="relative bg-[#FF0033] text-black font-bebas text-xl px-7 py-2.5 skew-x-[-12deg] border-2 border-black font-black flex items-center gap-2 shadow-2xl">
-                  <Swords className="w-5 h-5 transform skew-x-[12deg]" />
+                <div className="relative bg-[#FF0033] text-black font-bebas text-lg sm:text-xl px-5 sm:px-7 py-2 sm:py-2.5 skew-x-[-12deg] border-2 border-black font-black flex items-center justify-center gap-2 shadow-2xl">
+                  <Swords className="w-4 h-4 sm:w-5 sm:h-5 transform skew-x-[12deg]" />
                   <span className="block transform skew-x-[12deg] italic uppercase tracking-wider">
                     MULAI PERTARUNGAN GHAIB!
                   </span>
@@ -652,20 +684,26 @@ export const StoryMode: React.FC<StoryModeProps> = ({
               </button>
             );
           })() : (
-            <div className="flex gap-2">
+            <div className="w-full sm:w-auto flex flex-wrap gap-2 justify-end">
               <button
-                onClick={() => setViewMode('season2_preview')}
-                className="bg-purple-700 hover:bg-purple-600 text-white font-bebas text-base px-5 py-2 skew-x-[-10deg] border-2 border-purple-400 cursor-pointer shadow-lg flex items-center gap-1.5"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setViewMode('season2_preview');
+                }}
+                className="flex-1 sm:flex-initial bg-purple-700 hover:bg-purple-600 text-white font-bebas text-sm sm:text-base px-4 py-2 skew-x-[-10deg] border-2 border-purple-400 cursor-pointer shadow-lg flex items-center justify-center gap-1.5"
               >
-                <Radio className="w-4 h-4 transform skew-x-[10deg]" />
-                <span className="block transform skew-x-[10deg] uppercase font-bold">BUKA INTEL SEASON 2</span>
+                <Radio className="w-3.5 h-3.5 transform skew-x-[10deg]" />
+                <span className="block transform skew-x-[10deg] uppercase font-bold">INTEL S2</span>
               </button>
 
               <button
-                onClick={() => setViewMode('chapter_select')}
-                className="bg-[#141418] hover:bg-neutral-800 text-neutral-300 hover:text-white font-bebas text-base px-4 py-2 skew-x-[-10deg] border border-neutral-700 cursor-pointer"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setViewMode('chapter_select');
+                }}
+                className="flex-1 sm:flex-initial bg-[#141418] hover:bg-neutral-800 text-neutral-300 hover:text-white font-bebas text-sm sm:text-base px-3 sm:px-4 py-2 skew-x-[-10deg] border border-neutral-700 cursor-pointer text-center"
               >
-                <span className="block transform skew-x-[10deg]">SELESAI (KEMBALI KE BAB)</span>
+                <span className="block transform skew-x-[10deg]">KEMBALI KE BAB</span>
               </button>
             </div>
           )}
