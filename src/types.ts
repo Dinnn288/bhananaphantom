@@ -43,6 +43,7 @@ export interface SpiritCompanion {
   awakenRank?: number; // 0 to 5 (Tingkat Kebangkitan Sukma I - V)
   awakenTitle?: string;
   awakenPassive?: string;
+  duplicateCopies?: number; // Jumlah duplikat roh yang sama yang dimiliki (bahan kebangkitan bintang)
 }
 
 export interface Hero {

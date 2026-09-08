@@ -34,14 +34,14 @@ export const SpiritAttackAnimation: React.FC<SpiritAttackAnimationProps> = ({
     const ripTimer = setTimeout(() => {
       setPhase('elemental_strike');
       audioService.playCritical();
-    }, 540);
+    }, 800);
 
     // 3. Complete overall animation cleanly
     const finishTimer = setTimeout(() => {
       if (onCompleteRef.current) {
         onCompleteRef.current();
       }
-    }, isShowtime ? 1750 : 1350);
+    }, isShowtime ? 2100 : 1750);
 
     return () => {
       clearTimeout(ripTimer);

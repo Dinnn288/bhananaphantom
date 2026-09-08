@@ -61,13 +61,22 @@ export default function App() {
     const s2 = INITIAL_SPIRITS.find(s => s.id === 'nyai_candra_kirana') || INITIAL_SPIRITS[8];
     const s3 = INITIAL_SPIRITS.find(s => s.id === 'bharata_petir') || INITIAL_SPIRITS[9];
     return [
-      applyAwakenRankToSpirit(s1, 1),
-      applyAwakenRankToSpirit(s2, 1),
-      applyAwakenRankToSpirit(s3, 1)
+      { ...applyAwakenRankToSpirit(s1, 1), duplicateCopies: 1 },
+      { ...applyAwakenRankToSpirit(s2, 1), duplicateCopies: 1 },
+      { ...applyAwakenRankToSpirit(s3, 1), duplicateCopies: 1 }
     ];
   });
 
-  const [spiritGems, setSpiritGems] = useState<number>(() => activeProfile?.spiritGems ?? 120);
+  const [spiritGems, setSpiritGems] = useState<number>(() => {
+    // Setiap akun baru atau sesi baru langsung mendapat 800 token gacha
+    const hasClaimed800 = localStorage.getItem('bhawana_starter_800_bonus');
+    if (!hasClaimed800) {
+      localStorage.setItem('bhawana_starter_800_bonus', 'true');
+      const current = activeProfile?.spiritGems ?? 0;
+      return Math.max(800, current);
+    }
+    return activeProfile?.spiritGems ?? 800;
+  });
   const [playerLevel, setPlayerLevel] = useState<number>(() => activeProfile?.playerLevel ?? 1);
   const [playerExp, setPlayerExp] = useState<number>(() => activeProfile?.playerExp ?? 0);
 
@@ -527,6 +536,7 @@ export default function App() {
             ownedSpirits={ownedSpirits}
             onSummonNewSpirit={handleSummonNewSpirit}
             onSummonBatch={handleSummonBatch}
+            onEquipSpirit={handleEquipSpirit}
             onNavigateToUpgrade={() => setCurrentTab('upgrade')}
           />
         )}

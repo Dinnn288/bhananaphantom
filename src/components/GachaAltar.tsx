@@ -5,6 +5,7 @@ import { INITIAL_SPIRITS, applyAwakenRankToSpirit } from '../data/spirits';
 import { ElementBadge } from './ElementBadge';
 import { audioService } from '../services/audioService';
 import { SpiritAwakenAnimation } from './SpiritAwakenAnimation';
+import { GachaRitualAnimation } from './GachaRitualAnimation';
 import { 
   Sparkles, 
   Flame, 
@@ -18,7 +19,8 @@ import {
   Lock, 
   HelpCircle,
   Swords,
-  ShieldAlert
+  ShieldAlert,
+  Play
 } from 'lucide-react';
 
 interface GachaAltarProps {
@@ -28,6 +30,7 @@ interface GachaAltarProps {
   ownedSpirits: SpiritCompanion[];
   onSummonNewSpirit: (newSpirit: SpiritCompanion) => void;
   onSummonBatch?: (newSpirits: SpiritCompanion[]) => void;
+  onEquipSpirit?: (heroId: string, spirit: SpiritCompanion) => void;
   onNavigateToUpgrade?: () => void;
 }
 
@@ -51,6 +54,7 @@ export const GachaAltar: React.FC<GachaAltarProps> = ({
   ownedSpirits,
   onSummonNewSpirit,
   onSummonBatch,
+  onEquipSpirit,
   onNavigateToUpgrade
 }) => {
   const [isSummoning, setIsSummoning] = useState<boolean>(false);
@@ -59,8 +63,8 @@ export const GachaAltar: React.FC<GachaAltarProps> = ({
   const [multiResults, setMultiResults] = useState<{ spirit: SpiritCompanion; isNew: boolean; prevLevel?: number }[] | null>(null);
   const [showRatesModal, setShowRatesModal] = useState<boolean>(false);
 
-  // Spirit Awaken Animation for newly unlocked SSR/SR
-  const [awakenData, setAwakenData] = useState<{
+  // Dedicated SSR & SR Gacha Summon Animation
+  const [ritualData, setRitualData] = useState<{
     spirit: SpiritCompanion;
     isNew: boolean;
     prevLevel?: number;
@@ -122,39 +126,30 @@ export const GachaAltar: React.FC<GachaAltarProps> = ({
 
       if (existing) {
         prevLevel = existing.level;
+        const newDuplicates = (existing.duplicateCopies || 0) + 1;
         resultingSpirit = {
           ...existing,
           level: existing.level + 1,
           bonusHp: existing.bonusHp + 15,
           bonusSp: existing.bonusSp + 8,
           bonusAtk: existing.bonusAtk + 4,
-          bonusDef: existing.bonusDef + 3
+          bonusDef: existing.bonusDef + 3,
+          duplicateCopies: newDuplicates
         };
       } else {
         isNew = true;
-        resultingSpirit = applyAwakenRankToSpirit({ ...roll.spiritTemplate, level: 1 }, 1);
+        resultingSpirit = {
+          ...applyAwakenRankToSpirit({ ...roll.spiritTemplate, level: 1 }, 1),
+          duplicateCopies: 0
+        };
       }
 
       onSummonNewSpirit(resultingSpirit);
       setSingleResult({ spirit: resultingSpirit, isNew, prevLevel });
 
-      if (resultingSpirit.rarity === 'SSR') {
-        audioService.playCritical();
-        confetti({
-          particleCount: 150,
-          spread: 90,
-          origin: { y: 0.6 },
-          colors: ['#ffd700', '#ff0033', '#ffffff', '#ff8800']
-        });
-        setAwakenData({ spirit: resultingSpirit, isNew, prevLevel });
-      } else if (resultingSpirit.rarity === 'SR') {
-        audioService.playOneMore();
-        confetti({
-          particleCount: 70,
-          spread: 60,
-          origin: { y: 0.6 },
-          colors: ['#a855f7', '#3b82f6', '#ffffff']
-        });
+      // Trigger distinct summoning ritual for SSR or SR
+      if (resultingSpirit.rarity === 'SSR' || resultingSpirit.rarity === 'SR') {
+        setRitualData({ spirit: resultingSpirit, isNew, prevLevel });
       } else {
         audioService.playHit();
       }
@@ -215,12 +210,16 @@ export const GachaAltar: React.FC<GachaAltarProps> = ({
             bonusHp: current.bonusHp + 15,
             bonusSp: current.bonusSp + 8,
             bonusAtk: current.bonusAtk + 4,
-            bonusDef: current.bonusDef + 3
+            bonusDef: current.bonusDef + 3,
+            duplicateCopies: (current.duplicateCopies || 0) + 1
           };
           updatedOwnedList[existingIdx] = upgraded;
           results.push({ spirit: upgraded, isNew: false, prevLevel: prevLvl });
         } else {
-          const newlyCreated = applyAwakenRankToSpirit({ ...t, level: 1 }, 1);
+          const newlyCreated = {
+            ...applyAwakenRankToSpirit({ ...t, level: 1 }, 1),
+            duplicateCopies: 0
+          };
           updatedOwnedList.push(newlyCreated);
           results.push({ spirit: newlyCreated, isNew: true, prevLevel: 1 });
         }
@@ -234,23 +233,14 @@ export const GachaAltar: React.FC<GachaAltarProps> = ({
 
       setMultiResults(results);
 
-      const ssrCount = results.filter(r => r.spirit.rarity === 'SSR').length;
-      if (ssrCount > 0) {
-        audioService.playCritical();
-        confetti({
-          particleCount: 220,
-          spread: 100,
-          origin: { y: 0.5 },
-          colors: ['#ffd700', '#ff0033', '#ffffff', '#e60012']
-        });
-      } else {
-        audioService.playOneMore();
-        confetti({
-          particleCount: 80,
-          spread: 60,
-          origin: { y: 0.6 },
-          colors: ['#a855f7', '#ec4899', '#ffffff']
-        });
+      // Trigger grand summon ritual for top pulled spirit (SSR if pulled, otherwise SR)
+      const bestSsr = results.find(r => r.spirit.rarity === 'SSR');
+      const bestSr = results.find(r => r.spirit.rarity === 'SR');
+
+      if (bestSsr) {
+        setRitualData(bestSsr);
+      } else if (bestSr) {
+        setRitualData(bestSr);
       }
     }, 1800);
   };
@@ -440,9 +430,15 @@ export const GachaAltar: React.FC<GachaAltarProps> = ({
                       : singleResult.isNew ? 'ROH BARU TELAH DIBANGKITKAN!' : 'DUPLIKAT DIPEROLEH - LEVEL NAIK!'}
                   </span>
                   {!singleResult.isNew && (
-                    <span className="bg-green-500 text-black font-mono font-bold text-[10px] px-1.5 rounded">
-                      LV.{singleResult.prevLevel} &rarr; LV.{singleResult.spirit.level}
-                    </span>
+                    <div className="flex items-center gap-1.5 flex-wrap mt-0.5">
+                      <span className="bg-green-500 text-black font-mono font-bold text-[10px] px-1.5 rounded">
+                        LV.{singleResult.prevLevel} &rarr; LV.{singleResult.spirit.level}
+                      </span>
+                      <span className="bg-purple-700 text-white font-mono font-bold text-[10px] px-1.5 rounded flex items-center gap-1">
+                        <Sparkles className="w-2.5 h-2.5 text-yellow-300" />
+                        +1 ROH IDENTIK (TOTAL: {singleResult.spirit.duplicateCopies ?? 1} DUPLIKAT UNTUK KEBANGKITAN)
+                      </span>
+                    </div>
                   )}
                 </div>
 
@@ -458,6 +454,21 @@ export const GachaAltar: React.FC<GachaAltarProps> = ({
             </div>
 
             <div className="flex items-center gap-2 self-end sm:self-center">
+              {(singleResult.spirit.rarity === 'SSR' || singleResult.spirit.rarity === 'SR') && (
+                <button
+                  onClick={() => setRitualData(singleResult)}
+                  className={`font-bebas text-base px-3.5 py-1.5 skew-x-[-10deg] border-2 transition-all cursor-pointer flex items-center gap-1.5 ${
+                    singleResult.spirit.rarity === 'SSR'
+                      ? 'bg-yellow-400 hover:bg-yellow-300 text-black border-white shadow-lg animate-pulse'
+                      : 'bg-purple-600 hover:bg-purple-500 text-white border-purple-300 shadow-lg'
+                  }`}
+                >
+                  <Play className="w-3.5 h-3.5 fill-current transform skew-x-[10deg]" />
+                  <span className="block transform skew-x-[10deg] font-black">
+                    PUTAR ANIMASI {singleResult.spirit.rarity}
+                  </span>
+                </button>
+              )}
               {onNavigateToUpgrade && (
                 <button
                   onClick={() => {
@@ -520,41 +531,59 @@ export const GachaAltar: React.FC<GachaAltarProps> = ({
               return (
                 <div
                   key={idx}
+                  onClick={() => (isSsr || isSr) && setRitualData(res)}
                   className={`p-3 rounded-lg border-2 transition-all flex flex-col justify-between ${
                     isSsr
-                      ? 'border-yellow-400 bg-gradient-to-b from-yellow-950/60 to-black shadow-lg shadow-yellow-500/20 animate-pulse'
+                      ? 'border-yellow-400 bg-gradient-to-b from-yellow-950/60 to-black shadow-lg shadow-yellow-500/20 animate-pulse cursor-pointer hover:scale-105'
                       : isSr
-                      ? 'border-purple-500 bg-gradient-to-b from-purple-950/50 to-black shadow-md shadow-purple-500/15'
+                      ? 'border-purple-500 bg-gradient-to-b from-purple-950/50 to-black shadow-md shadow-purple-500/15 cursor-pointer hover:scale-105'
                       : 'border-neutral-800 bg-[#14141a]'
                   }`}
                 >
-                  <div className="flex items-center justify-between mb-2">
-                    <span
-                      className={`font-bebas text-xs px-2 py-0.5 rounded skew-x-[-8deg] font-black ${
-                        isSsr
-                          ? 'bg-yellow-400 text-black'
-                          : isSr
-                          ? 'bg-purple-600 text-white'
-                          : 'bg-neutral-800 text-neutral-300'
-                      }`}
-                    >
-                      {res.spirit.rarity}
-                    </span>
-                    <ElementBadge element={res.spirit.element} size="sm" showName={false} />
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <span
+                        className={`font-bebas text-xs px-2 py-0.5 rounded skew-x-[-8deg] font-black ${
+                          isSsr
+                            ? 'bg-yellow-400 text-black'
+                            : isSr
+                            ? 'bg-purple-600 text-white'
+                            : 'bg-neutral-800 text-neutral-300'
+                        }`}
+                      >
+                        {res.spirit.rarity}
+                      </span>
+                      <ElementBadge element={res.spirit.element} size="sm" showName={false} />
+                    </div>
+
+                    <div className="font-bebas text-base text-white tracking-wide truncate">
+                      {res.spirit.name}
+                    </div>
+                    <div className="text-[10px] font-mono text-neutral-400 truncate">
+                      {res.spirit.title}
+                    </div>
                   </div>
 
-                  <div className="font-bebas text-base text-white tracking-wide truncate">
-                    {res.spirit.name}
-                  </div>
-                  <div className="text-[10px] font-mono text-neutral-400 truncate">
-                    {res.spirit.title}
-                  </div>
+                  <div className="mt-2 pt-1.5 border-t border-neutral-800">
+                    <div className="flex items-center justify-between text-[10px] font-mono">
+                      <span className={res.isNew ? 'text-green-400 font-bold' : 'text-yellow-400 font-bold'}>
+                        {res.isNew ? '★ BARU' : `LV.${res.spirit.level}`}
+                      </span>
+                      <span className="text-neutral-500">#{idx + 1}</span>
+                    </div>
 
-                  <div className="mt-2 pt-1.5 border-t border-neutral-800 flex items-center justify-between text-[10px] font-mono">
-                    <span className={res.isNew ? 'text-green-400 font-bold' : 'text-yellow-400 font-bold'}>
-                      {res.isNew ? '★ BARU' : `LV.${res.spirit.level}`}
-                    </span>
-                    <span className="text-neutral-500">#{idx + 1}</span>
+                    {(isSsr || isSr) && (
+                      <div
+                        className={`mt-2 py-1 px-1 rounded text-[10px] font-mono font-bold flex items-center justify-center gap-1 ${
+                          isSsr
+                            ? 'bg-yellow-400/20 text-yellow-300 border border-yellow-400/50'
+                            : 'bg-purple-600/20 text-purple-300 border border-purple-500/50'
+                        }`}
+                      >
+                        <Play className="w-2.5 h-2.5 fill-current" />
+                        <span>KLIK ANIMASI</span>
+                      </div>
+                    )}
                   </div>
                 </div>
               );
@@ -636,14 +665,15 @@ export const GachaAltar: React.FC<GachaAltarProps> = ({
         </div>
       )}
 
-      {/* Awaken Animation Overlay */}
-      {awakenData && (
-        <SpiritAwakenAnimation
-          spirit={awakenData.spirit}
-          isNew={awakenData.isNew}
-          prevLevel={awakenData.prevLevel}
+      {/* Dedicated SSR & SR Gacha Summon Ritual Animation */}
+      {ritualData && (
+        <GachaRitualAnimation
+          spirit={ritualData.spirit}
+          isNew={ritualData.isNew}
+          prevLevel={ritualData.prevLevel}
           heroes={heroes}
-          onConfirm={() => setAwakenData(null)}
+          onEquipToHero={onEquipSpirit}
+          onConfirm={() => setRitualData(null)}
         />
       )}
     </div>

@@ -42,10 +42,16 @@ export const SpiritAwakenAnimation: React.FC<SpiritAwakenAnimationProps> = ({
   onConfirmRef.current = onConfirm;
 
   useEffect(() => {
-    // Play the awakening audio
-    audioService.playAwakenSound(spirit.rarity);
+    // Play distinctive awakening audio
+    if (spirit.rarity === 'SSR') {
+      audioService.playGachaSsrSummon();
+    } else if (spirit.rarity === 'SR') {
+      audioService.playGachaSrSummon();
+    } else {
+      audioService.playAwakenSound('R');
+    }
 
-    // After 1.2s, transition from shatter/seal rupture to full card reveal
+    // After 1.1s, transition from shatter/seal rupture to full card reveal
     const timer = setTimeout(() => {
       setPhase('reveal');
       if (spirit.rarity === 'SSR') {
@@ -53,14 +59,14 @@ export const SpiritAwakenAnimation: React.FC<SpiritAwakenAnimationProps> = ({
           particleCount: 160,
           spread: 120,
           origin: { y: 0.45 },
-          colors: ['#ffd700', '#ff0033', '#ffffff', '#ff8800']
+          colors: ['#ffd700', '#ff0033', '#ffffff', '#fbbf24']
         });
       } else if (spirit.rarity === 'SR') {
         confetti({
-          particleCount: 70,
+          particleCount: 90,
           spread: 80,
           origin: { y: 0.5 },
-          colors: ['#a855f7', '#38bdf8', '#ffffff']
+          colors: ['#a855f7', '#00f5d4', '#ffffff', '#818cf8']
         });
       }
     }, 1100);

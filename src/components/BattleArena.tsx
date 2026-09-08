@@ -9,6 +9,7 @@ import { SpiritAttackAnimation } from './SpiritAttackAnimation';
 import { AllOutAttackAnimation } from './AllOutAttackAnimation';
 import { SpiritShiftAnimation } from './SpiritShiftAnimation';
 import { ShowtimeCinematicAnimation } from './ShowtimeCinematicAnimation';
+import { WeaknessSlashAnimation } from './WeaknessSlashAnimation';
 import { audioService } from '../services/audioService';
 import { 
   Sword, 
@@ -44,8 +45,8 @@ interface ActiveSpiritAttack {
   onFinish: () => void;
 }
 
-// Minimum highlight gauge required to unleash Showtime (reduced from 100 to 70 for fluid accessibility)
-const SHOWTIME_THRESHOLD = 70;
+// Minimum highlight gauge required to unleash Showtime (100% required for ultimate finisher)
+const SHOWTIME_THRESHOLD = 100;
 
 export const BattleArena: React.FC<BattleArenaProps> = ({
   heroes: initialHeroes,
@@ -61,8 +62,8 @@ export const BattleArena: React.FC<BattleArenaProps> = ({
       ...h,
       isDown: false,
       isDefending: false,
-      // Starts with at least 40% gauge so player can unleash Showtime early in combat
-      highlightGauge: Math.max(40, h.highlightGauge || 0)
+      // Starts at 0% gauge: must be charged tactically through weakness exploit, baton pass, or battle actions
+      highlightGauge: 0
     }))
   );
   const [enemies, setEnemies] = useState<EnemyGhost[]>(() =>
@@ -94,6 +95,13 @@ export const BattleArena: React.FC<BattleArenaProps> = ({
 
   // Active Spirit Attack Cinematic Animation
   const [activeSpiritAttack, setActiveSpiritAttack] = useState<ActiveSpiritAttack | null>(null);
+
+  // Persona 5 Royal Weakness Scratch & Slash Cutin Animation Overlay State
+  const [weaknessAnimData, setWeaknessAnimData] = useState<{
+    element: string;
+    targetName: string;
+    damage?: number;
+  } | null>(null);
 
   // Dynamic Combat VFX states
   const [enemyAttackVfx, setEnemyAttackVfx] = useState<{
@@ -357,7 +365,9 @@ export const BattleArena: React.FC<BattleArenaProps> = ({
 
             audioService.playSlash();
             const newHp = Math.max(0, targetHero.hp - dmg);
-            const newGauge = Math.min(100, targetHero.highlightGauge + 25);
+            // Reduced gauge gain on hit (6% normal, 10% critical)
+            const gaugeGain = isCrit ? 10 : 6;
+            const newGauge = Math.min(100, targetHero.highlightGauge + gaugeGain);
             if (newGauge >= SHOWTIME_THRESHOLD && targetHero.highlightGauge < SHOWTIME_THRESHOLD) {
               audioService.playShowtimeReady();
             }
@@ -435,8 +445,8 @@ export const BattleArena: React.FC<BattleArenaProps> = ({
     if (isCrit) dmg = Math.floor(dmg * 1.8);
     dmg = Math.max(20, dmg);
 
-    // Boost highlight gauge by +22 (or +30 on critical hit)
-    const gaugeGain = isCrit ? 30 : 22;
+    // Boost highlight gauge (+7 on normal hit, +12 on critical hit)
+    const gaugeGain = isCrit ? 12 : 7;
     setHeroes(prev =>
       prev.map((h, i) => {
         if (i !== activeHeroIndex) return h;
@@ -509,9 +519,16 @@ export const BattleArena: React.FC<BattleArenaProps> = ({
     if (isEnemyTurn || activeSpiritAttack) return;
     audioService.playClick();
     setHeroes(prev =>
-      prev.map((h, i) => (i === activeHeroIndex ? { ...h, isDefending: true } : h))
+      prev.map((h, i) => {
+        if (i !== activeHeroIndex) return h;
+        const newG = Math.min(100, h.highlightGauge + 8);
+        if (newG >= SHOWTIME_THRESHOLD && h.highlightGauge < SHOWTIME_THRESHOLD) {
+          audioService.playShowtimeReady();
+        }
+        return { ...h, isDefending: true, highlightGauge: newG };
+      })
     );
-    addLog(`${activeHero.name} mengambil posisi bertahan (Guard)! Kerusakan akan berkurang 50%.`, 'action');
+    addLog(`${activeHero.name} bertahan (Guard)! Kerusakan -50% & +8% Showtime Gauge.`, 'action');
     advanceTurn();
   };
 
@@ -522,12 +539,19 @@ export const BattleArena: React.FC<BattleArenaProps> = ({
     if (target.hp <= 0) return;
 
     audioService.playOneMore();
-    addLog(`BATON PASS! ${activeHero.name} menyerahkan tongkat estafet giliran pada ${target.name} (+25% ATK Boost)!`, 'onemore');
+    addLog(`BATON PASS! ${activeHero.name} menyerahkan tongkat estafet giliran pada ${target.name} (+25% ATK & +12% Showtime)!`, 'onemore');
 
     setHeroes(prev =>
-      prev.map((h, i) =>
-        i === targetHeroIdx ? { ...h, baseAtk: Math.floor(h.baseAtk * 1.25) } : h
-      )
+      prev.map((h, i) => {
+        if (i === targetHeroIdx) {
+          const newG = Math.min(100, h.highlightGauge + 12);
+          if (newG >= SHOWTIME_THRESHOLD && h.highlightGauge < SHOWTIME_THRESHOLD) {
+            audioService.playShowtimeReady();
+          }
+          return { ...h, baseAtk: Math.floor(h.baseAtk * 1.25), highlightGauge: newG };
+        }
+        return h;
+      })
     );
 
     setActiveHeroIndex(targetHeroIdx);
@@ -668,6 +692,10 @@ export const BattleArena: React.FC<BattleArenaProps> = ({
             });
 
             if (causedWeaknessOrCrit) {
+              setWeaknessAnimData({
+                element: skill.element,
+                targetName: 'Seluruh Pasukan Siluman'
+              });
               triggerOneMore();
             }
 
@@ -702,7 +730,7 @@ export const BattleArena: React.FC<BattleArenaProps> = ({
 
   // Cast Showtime / Highlight Ultimate with Ultra-Cool Cinematic Animation
   const handleShowtime = () => {
-    // Requires SHOWTIME_THRESHOLD (70%) instead of 100%, and safely uses effectiveSpirit
+    // Requires full 100% gauge to unleash ultimate finisher
     if (activeHero.highlightGauge < SHOWTIME_THRESHOLD || isEnemyTurn || activeSpiritAttack || showtimeCinematic) return;
 
     const hlSkill: Skill = activeSpirit?.highlightSkill || {
@@ -715,9 +743,9 @@ export const BattleArena: React.FC<BattleArenaProps> = ({
       description: 'Serangan puncak gabungan manusia dan roh penjaga.'
     };
 
-    // Deduct highlight gauge by threshold (preserves overflow for faster subsequent use)
+    // Consumes full 100% highlight gauge
     setHeroes(prev =>
-      prev.map((h, i) => (i === activeHeroIndex ? { ...h, highlightGauge: Math.max(0, h.highlightGauge - SHOWTIME_THRESHOLD) } : h))
+      prev.map((h, i) => (i === activeHeroIndex ? { ...h, highlightGauge: 0 } : h))
     );
 
     addLog(`★ SHOWTIME DILEPASKAN! ${activeHero.name} & ${effectiveSpirit.name}: [${hlSkill.name}]!!`, 'highlight');
@@ -773,8 +801,28 @@ export const BattleArena: React.FC<BattleArenaProps> = ({
       const newHp = Math.max(0, target.hp - damage);
       const shouldKnockDown = (isWeak || isCrit) && !target.isDown;
 
+      // Trigger Persona 5 Royal Weakness Scratch & Slash Cutin Animation
+      if (isWeak) {
+        setWeaknessAnimData({
+          element,
+          targetName: target.name,
+          damage
+        });
+      }
+
       if (shouldKnockDown) {
-        addLog(`★ KELEMAHAN EKSPLOITASI! ${target.name} JATUH DALAM KONDISI [DOWN]!`, 'down');
+        addLog(`★ KELEMAHAN EKSPLOITASI! ${target.name} JATUH DALAM KONDISI [DOWN]! (+10% Showtime)`, 'down');
+        // Tactical bonus: hitting enemy weakness grants +10% Showtime gauge to active hero
+        setHeroes(hList =>
+          hList.map((h, i) => {
+            if (i !== activeHeroIndex) return h;
+            const newG = Math.min(100, h.highlightGauge + 10);
+            if (newG >= SHOWTIME_THRESHOLD && h.highlightGauge < SHOWTIME_THRESHOLD) {
+              audioService.playShowtimeReady();
+            }
+            return { ...h, highlightGauge: newG };
+          })
+        );
       }
 
       const updated = prev.map((e, idx) =>
@@ -921,6 +969,16 @@ export const BattleArena: React.FC<BattleArenaProps> = ({
             setActiveSpiritAttack(null);
             if (finishCb) finishCb();
           }}
+        />
+      )}
+
+      {/* Persona 5 Royal Weakness Scratch & Slash Cutin Animation */}
+      {weaknessAnimData && (
+        <WeaknessSlashAnimation
+          element={weaknessAnimData.element}
+          targetName={weaknessAnimData.targetName}
+          damage={weaknessAnimData.damage}
+          onComplete={() => setWeaknessAnimData(null)}
         />
       )}
 

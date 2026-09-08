@@ -7,7 +7,8 @@ import {
   applyAwakenRankToSpirit, 
   getSpiritUpgradeCost, 
   getSpiritUpgradeStatGain, 
-  getSpiritAwakenCost 
+  getSpiritAwakenCost,
+  getAwakenRequiredDuplicates
 } from '../data/spirits';
 import { ElementBadge } from './ElementBadge';
 import { audioService } from '../services/audioService';
@@ -74,7 +75,11 @@ export const SpiritUpgradeTemple: React.FC<SpiritUpgradeTempleProps> = ({
   const currentLevelUpCost = getSpiritUpgradeCost(selectedSpirit);
   const currentStatGains = getSpiritUpgradeStatGain(selectedSpirit);
   const currentAwakenRank = selectedSpirit.awakenRank ?? 1;
-  const awakenCost = currentAwakenRank < 5 ? getSpiritAwakenCost(selectedSpirit, currentAwakenRank + 1) : 0;
+  const nextAwakenRank = currentAwakenRank + 1;
+  const awakenCost = currentAwakenRank < 5 ? getSpiritAwakenCost(selectedSpirit, nextAwakenRank) : 0;
+  const requiredDuplicates = currentAwakenRank < 5 ? getAwakenRequiredDuplicates(nextAwakenRank) : 0;
+  const currentDuplicates = selectedSpirit.duplicateCopies ?? 0;
+  const hasEnoughDuplicates = currentDuplicates >= requiredDuplicates;
 
   // Equip with Spirit Shift Animation
   const handleEquipWithAnimation = (heroId: string, spiritToEquip: SpiritCompanion) => {
@@ -127,8 +132,14 @@ export const SpiritUpgradeTemple: React.FC<SpiritUpgradeTempleProps> = ({
   };
 
   // Awaken Star Rank (★1 to ★5, Scaled by Rarity)
+  // Mengharuskan roh duplikat yang sama sebagai bahan persembahan kebangkitan
   const handleAwakenRank = () => {
     if (currentAwakenRank >= 5) return;
+
+    if (!hasEnoughDuplicates) {
+      audioService.playWeakness();
+      return;
+    }
 
     if (spiritGems < awakenCost) {
       audioService.playWeakness();
@@ -137,7 +148,12 @@ export const SpiritUpgradeTemple: React.FC<SpiritUpgradeTempleProps> = ({
 
     if (!onSpendGems(awakenCost)) return;
 
-    const updated = applyAwakenRankToSpirit(selectedSpirit, currentAwakenRank + 1);
+    const updatedBase = applyAwakenRankToSpirit(selectedSpirit, nextAwakenRank);
+    const updated: SpiritCompanion = {
+      ...updatedBase,
+      duplicateCopies: Math.max(0, currentDuplicates - requiredDuplicates)
+    };
+
     setSelectedSpirit(updated);
     onUpdateSpirit(updated);
 
@@ -394,6 +410,10 @@ export const SpiritUpgradeTemple: React.FC<SpiritUpgradeTempleProps> = ({
                   <span className="text-xs font-mono text-amber-400 font-bold">
                     Kebangkitan ★{currentAwakenRank}/5
                   </span>
+                  <span className="text-xs font-mono text-purple-300 font-bold bg-purple-950/80 border border-purple-700/80 px-2 py-0.5 rounded flex items-center gap-1">
+                    <Sparkles className="w-3 h-3 text-purple-400" />
+                    Duplikat Tersedia: {currentDuplicates}
+                  </span>
                   {selectedSpirit.rarity === 'SSR' && (
                     <span className="bg-red-600 text-white font-mono text-[9px] px-1.5 py-0.5 rounded font-black tracking-wider uppercase">
                       SP KONSUMSI TINGGI
@@ -434,27 +454,43 @@ export const SpiritUpgradeTemple: React.FC<SpiritUpgradeTempleProps> = ({
                   </span>
                 </div>
 
-                {/* Awaken Button */}
+                {/* Awaken Button & Duplicate Requirement */}
                 {currentAwakenRank < 5 && (
-                  <div className="flex flex-col items-start sm:items-end">
+                  <div className="flex flex-col items-start sm:items-end w-full sm:w-auto">
+                    {/* Syarat Roh Identik */}
+                    <div className={`text-[11px] font-mono mb-1.5 px-2.5 py-1 rounded border flex items-center gap-1.5 ${
+                      hasEnoughDuplicates
+                        ? 'bg-green-950/70 border-green-500/60 text-green-300'
+                        : 'bg-red-950/70 border-red-500/60 text-red-300'
+                    }`}>
+                      <Sparkles className={`w-3 h-3 ${hasEnoughDuplicates ? 'text-green-400' : 'text-red-400'}`} />
+                      <span>
+                        Bahan: <strong>{currentDuplicates} / {requiredDuplicates} Roh Duplikat</strong>
+                      </span>
+                    </div>
+
                     <button
                       onClick={handleAwakenRank}
-                      disabled={spiritGems < awakenCost}
+                      disabled={spiritGems < awakenCost || !hasEnoughDuplicates}
                       className={`font-bebas text-sm px-4 py-2 skew-x-[-10deg] border-2 font-black cursor-pointer shadow-lg flex items-center gap-1.5 transition-all ${
-                        selectedSpirit.rarity === 'SSR'
+                        !hasEnoughDuplicates
+                          ? 'bg-neutral-800 text-neutral-400 border-neutral-600 opacity-60 cursor-not-allowed'
+                          : selectedSpirit.rarity === 'SSR'
                           ? 'bg-amber-500 hover:bg-amber-400 text-black border-yellow-300 shadow-amber-500/20'
                           : selectedSpirit.rarity === 'SR'
                           ? 'bg-purple-600 hover:bg-purple-500 text-white border-purple-300'
                           : 'bg-amber-600 hover:bg-amber-500 text-black border-amber-300'
                       } ${spiritGems < awakenCost ? 'opacity-40 cursor-not-allowed' : ''}`}
                     >
-                      <Star className={`w-4 h-4 transform skew-x-[10deg] ${selectedSpirit.rarity === 'SR' ? 'fill-white' : 'fill-black'}`} />
+                      <Star className={`w-4 h-4 transform skew-x-[10deg] ${selectedSpirit.rarity === 'SR' && hasEnoughDuplicates ? 'fill-white' : 'fill-black'}`} />
                       <span className="transform skew-x-[10deg]">
-                        BANGKITKAN ★{currentAwakenRank + 1} ({awakenCost} TOKEN)
+                        {!hasEnoughDuplicates
+                          ? `BUTUH ROH YANG SAMA (${currentDuplicates}/${requiredDuplicates})`
+                          : `BANGKITKAN ★${nextAwakenRank} (${awakenCost} TOKEN)`}
                       </span>
                     </button>
                     <span className="text-[10px] font-mono text-amber-400/80 mt-1">
-                      {selectedSpirit.rarity === 'SSR' ? 'Awaken SSR (Tarif 2.5x)' : selectedSpirit.rarity === 'SR' ? 'Awaken SR (Tarif 1.6x)' : 'Awaken Standar'}
+                      {selectedSpirit.rarity === 'SSR' ? 'Awaken SSR (Tarif 2.5x + Roh Sama)' : selectedSpirit.rarity === 'SR' ? 'Awaken SR (Tarif 1.6x + Roh Sama)' : 'Awaken (Memerlukan Roh Identik)'}
                     </span>
                   </div>
                 )}

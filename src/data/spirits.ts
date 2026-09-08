@@ -1617,3 +1617,24 @@ export const getSpiritAwakenCost = (spirit: SpiritCompanion, nextRank: number): 
   }
 };
 
+/**
+ * Menghitung jumlah roh duplikat yang sama (roh identik) yang dibutuhkan
+ * untuk membangkitkan bintang (Awaken Rank ★1 -> ★5).
+ * Sesuai instruksi: untuk bangkitkan roh perlu menggunakan roh yang sama.
+ */
+export const getAwakenRequiredDuplicates = (nextRank: number): number => {
+  switch (nextRank) {
+    case 1:
+    case 2:
+      return 1; // 1 duplikat roh yang sama
+    case 3:
+      return 1; // 1 duplikat roh yang sama
+    case 4:
+      return 2; // 2 duplikat roh yang sama
+    case 5:
+      return 2; // 2 duplikat roh yang sama (Puncak Kebangkitan V)
+    default:
+      return 1;
+  }
+};
+

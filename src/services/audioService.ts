@@ -116,6 +116,59 @@ class AudioManager {
     }
   }
 
+  // Persona 5 Royal Style Cinematic Weakness Scratch & Slash Impact
+  public playWeaknessSlash() {
+    if (this.isMuted) return;
+    try {
+      this.initCtx();
+      if (!this.ctx) return;
+      const t = this.ctx.currentTime;
+
+      // Layer 1: Razor-Sharp Metallic Blade Slash (Goresan Pisau Tajam)
+      const slashOsc = this.ctx.createOscillator();
+      const slashGain = this.ctx.createGain();
+      slashOsc.type = 'sawtooth';
+      slashOsc.frequency.setValueAtTime(4800, t);
+      slashOsc.frequency.exponentialRampToValueAtTime(320, t + 0.22);
+      slashGain.gain.setValueAtTime(0.4, t);
+      slashGain.gain.exponentialRampToValueAtTime(0.001, t + 0.25);
+      slashOsc.connect(slashGain);
+      slashGain.connect(this.ctx.destination);
+      slashOsc.start(t);
+      slashOsc.stop(t + 0.25);
+
+      // Layer 2: Deep Sub-Bass Impact Thud (Hantaman Keras)
+      const bassOsc = this.ctx.createOscillator();
+      const bassGain = this.ctx.createGain();
+      bassOsc.type = 'triangle';
+      bassOsc.frequency.setValueAtTime(140, t);
+      bassOsc.frequency.exponentialRampToValueAtTime(35, t + 0.35);
+      bassGain.gain.setValueAtTime(0.5, t);
+      bassGain.gain.exponentialRampToValueAtTime(0.001, t + 0.38);
+      bassOsc.connect(bassGain);
+      bassGain.connect(this.ctx.destination);
+      bassOsc.start(t);
+      bassOsc.stop(t + 0.38);
+
+      // Layer 3: High-Energy Weakness Sonic Flare (Chord 'DOWN!' Persona 5)
+      [660, 880, 1320].forEach((freq, idx) => {
+        const chordOsc = this.ctx!.createOscillator();
+        const chordGain = this.ctx!.createGain();
+        chordOsc.type = 'sine';
+        chordOsc.frequency.setValueAtTime(freq, t + 0.04);
+        chordOsc.frequency.exponentialRampToValueAtTime(freq * 1.5, t + 0.28);
+        chordGain.gain.setValueAtTime(0.12 / (idx + 1), t + 0.04);
+        chordGain.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
+        chordOsc.connect(chordGain);
+        chordGain.connect(this.ctx!.destination);
+        chordOsc.start(t + 0.04);
+        chordOsc.stop(t + 0.3);
+      });
+    } catch {
+      // Ignored
+    }
+  }
+
   // Persona-style Mask Rip Awakening sound
   public playMaskRip() {
     if (this.isMuted) return;
@@ -124,54 +177,86 @@ class AudioManager {
       if (!this.ctx) return;
       const t = this.ctx.currentTime;
 
-      // 1. Tearing / snapping high-pitch crack
-      const snapOsc = this.ctx.createOscillator();
-      const snapGain = this.ctx.createGain();
-      snapOsc.type = 'sawtooth';
-      snapOsc.frequency.setValueAtTime(2600, t);
-      snapOsc.frequency.exponentialRampToValueAtTime(360, t + 0.09);
-      snapGain.gain.setValueAtTime(0.35, t);
-      snapGain.gain.exponentialRampToValueAtTime(0.001, t + 0.1);
-      snapOsc.connect(snapGain);
-      snapGain.connect(this.ctx.destination);
-      snapOsc.start(t);
-      snapOsc.stop(t + 0.1);
+      // 1. Visceral Flesh & Ceramic Tearing Crack (Double brutal snap)
+      [0, 0.05].forEach((delay, idx) => {
+        const snapOsc = this.ctx!.createOscillator();
+        const snapGain = this.ctx!.createGain();
+        snapOsc.type = 'sawtooth';
+        snapOsc.frequency.setValueAtTime(idx === 0 ? 3200 : 4400, t + delay);
+        snapOsc.frequency.exponentialRampToValueAtTime(160, t + delay + 0.12);
+        snapGain.gain.setValueAtTime(0.45, t + delay);
+        snapGain.gain.exponentialRampToValueAtTime(0.001, t + delay + 0.14);
+        snapOsc.connect(snapGain);
+        snapGain.connect(this.ctx!.destination);
+        snapOsc.start(t + delay);
+        snapOsc.stop(t + delay + 0.15);
+      });
 
-      // 2. Spiritual soul fire burst (noise whoosh)
-      const bufferSize = Math.floor(this.ctx.sampleRate * 0.35);
+      // 2. Glass / Ceramic Mask Fracture Shatter
+      [1400, 2200, 3400].forEach((freq, idx) => {
+        const osc = this.ctx!.createOscillator();
+        const gain = this.ctx!.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(freq, t + 0.06 + idx * 0.02);
+        osc.frequency.exponentialRampToValueAtTime(320, t + 0.06 + idx * 0.02 + 0.18);
+        gain.gain.setValueAtTime(0.3, t + 0.06 + idx * 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.06 + idx * 0.02 + 0.2);
+        osc.connect(gain);
+        gain.connect(this.ctx!.destination);
+        osc.start(t + 0.06 + idx * 0.02);
+        osc.stop(t + 0.06 + idx * 0.02 + 0.22);
+      });
+
+      // 3. Deep Sub-Bass Awakening Thud (Chest-pounding impact)
+      const sub = this.ctx.createOscillator();
+      const subGain = this.ctx.createGain();
+      sub.type = 'triangle';
+      sub.frequency.setValueAtTime(200, t);
+      sub.frequency.exponentialRampToValueAtTime(35, t + 0.45);
+      subGain.gain.setValueAtTime(0.65, t);
+      subGain.gain.exponentialRampToValueAtTime(0.001, t + 0.5);
+      sub.connect(subGain);
+      subGain.connect(this.ctx.destination);
+      sub.start(t);
+      sub.stop(t + 0.52);
+
+      // 4. Roaring Spiritual Hellfire Geyser (Erupting soul flames)
+      const bufferSize = Math.floor(this.ctx.sampleRate * 0.55);
       const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
       const data = buffer.getChannelData(0);
-      for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+      for (let i = 0; i < bufferSize; i++) data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (this.ctx.sampleRate * 0.25));
       const noise = this.ctx.createBufferSource();
       noise.buffer = buffer;
       const filter = this.ctx.createBiquadFilter();
       filter.type = 'lowpass';
-      filter.frequency.setValueAtTime(800, t);
-      filter.frequency.exponentialRampToValueAtTime(3200, t + 0.12);
-      filter.frequency.exponentialRampToValueAtTime(450, t + 0.35);
+      filter.frequency.setValueAtTime(600, t);
+      filter.frequency.exponentialRampToValueAtTime(4200, t + 0.15);
+      filter.frequency.exponentialRampToValueAtTime(300, t + 0.52);
       const noiseGain = this.ctx.createGain();
       noiseGain.gain.setValueAtTime(0.01, t);
-      noiseGain.gain.exponentialRampToValueAtTime(0.32, t + 0.08);
-      noiseGain.gain.exponentialRampToValueAtTime(0.01, t + 0.35);
+      noiseGain.gain.exponentialRampToValueAtTime(0.45, t + 0.1);
+      noiseGain.gain.exponentialRampToValueAtTime(0.01, t + 0.52);
       noise.connect(filter);
       filter.connect(noiseGain);
       noiseGain.connect(this.ctx.destination);
       noise.start(t);
 
-      // 3. Resonant soul awakening chord (A major triad)
-      const chordNotes = [220, 277.18, 329.63, 440];
+      // 5. Ascending Persona Awakening Horn / Roar (Power chord surge)
+      const chordNotes = [220, 277.18, 329.63, 440, 554.37];
       chordNotes.forEach((freq, idx) => {
         if (!this.ctx) return;
         const osc = this.ctx.createOscillator();
         const gain = this.ctx.createGain();
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(freq, t + 0.04 + idx * 0.01);
-        gain.gain.setValueAtTime(0.14, t + 0.04);
-        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.42);
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(freq * 0.8, t + 0.08);
+        osc.frequency.exponentialRampToValueAtTime(freq, t + 0.18);
+        gain.gain.setValueAtTime(0, t);
+        gain.gain.linearRampToValueAtTime(0.2, t + 0.1);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.6);
         osc.connect(gain);
         gain.connect(this.ctx.destination);
-        osc.start(t + 0.04);
-        osc.stop(t + 0.43);
+        osc.start(t + 0.08);
+        osc.stop(t + 0.65);
       });
     } catch {
       // Audio fallback safe
@@ -678,6 +763,122 @@ class AudioManager {
         gain.connect(this.ctx!.destination);
         osc.start(t + 0.05 + idx * 0.03);
         osc.stop(t + 0.05 + idx * 0.03 + 0.55);
+      });
+    } catch {
+      // Ignored
+    }
+  }
+
+  // Gacha SSR Divine Awakening Ritual Audio (Golden Thunder, Shattered Sacred Chains, Royal Velvet Fanfare)
+  public playGachaSsrSummon() {
+    if (this.isMuted) return;
+    try {
+      this.initCtx();
+      if (!this.ctx) return;
+      const t = this.ctx.currentTime;
+
+      // 1. Deep Earthquake & Velvet Thunder Sub Drop
+      const thunder = this.ctx.createOscillator();
+      const thunderGain = this.ctx.createGain();
+      thunder.type = 'sawtooth';
+      thunder.frequency.setValueAtTime(180, t);
+      thunder.frequency.exponentialRampToValueAtTime(28, t + 1.2);
+      thunderGain.gain.setValueAtTime(0.5, t);
+      thunderGain.gain.exponentialRampToValueAtTime(0.005, t + 1.25);
+      thunder.connect(thunderGain);
+      thunderGain.connect(this.ctx.destination);
+      thunder.start(t);
+      thunder.stop(t + 1.25);
+
+      // 2. Shattering Golden Celestial Chains (Cascading Metallic Shimmer)
+      [1400, 2100, 2800, 3600, 4400].forEach((freq, i) => {
+        const osc = this.ctx!.createOscillator();
+        const g = this.ctx!.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(freq, t + 0.15 + i * 0.05);
+        osc.frequency.exponentialRampToValueAtTime(400, t + 0.15 + i * 0.05 + 0.35);
+        g.gain.setValueAtTime(0, t);
+        g.gain.linearRampToValueAtTime(0.25, t + 0.15 + i * 0.05);
+        g.gain.exponentialRampToValueAtTime(0.001, t + 0.15 + i * 0.05 + 0.4);
+        osc.connect(g);
+        g.connect(this.ctx!.destination);
+        osc.start(t + 0.15 + i * 0.05);
+        osc.stop(t + 0.15 + i * 0.05 + 0.45);
+      });
+
+      // 3. Royal Persona Awakening Fanfare (C5 -> E5 -> G5 -> C6)
+      const royalNotes = [523.25, 659.25, 783.99, 1046.50, 1318.51];
+      royalNotes.forEach((freq, idx) => {
+        const osc = this.ctx!.createOscillator();
+        const g = this.ctx!.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(freq * 0.95, t + 0.45 + idx * 0.08);
+        osc.frequency.exponentialRampToValueAtTime(freq, t + 0.45 + idx * 0.08 + 0.05);
+        g.gain.setValueAtTime(0, t);
+        g.gain.linearRampToValueAtTime(0.35, t + 0.45 + idx * 0.08 + 0.03);
+        g.gain.exponentialRampToValueAtTime(0.001, t + 0.45 + idx * 0.08 + (idx === royalNotes.length - 1 ? 1.4 : 0.45));
+        osc.connect(g);
+        g.connect(this.ctx!.destination);
+        osc.start(t + 0.45 + idx * 0.08);
+        osc.stop(t + 0.45 + idx * 0.08 + (idx === royalNotes.length - 1 ? 1.45 : 0.5));
+      });
+    } catch {
+      // Ignored
+    }
+  }
+
+  // Gacha SR Mystic Awakening Ritual Audio (Amethyst Portal Resonance, Psychic Chime, Arcane Wave)
+  public playGachaSrSummon() {
+    if (this.isMuted) return;
+    try {
+      this.initCtx();
+      if (!this.ctx) return;
+      const t = this.ctx.currentTime;
+
+      // 1. Swirling Dimensional Portal Wave
+      const wave = this.ctx.createOscillator();
+      const waveGain = this.ctx.createGain();
+      wave.type = 'sine';
+      wave.frequency.setValueAtTime(200, t);
+      wave.frequency.exponentialRampToValueAtTime(600, t + 0.35);
+      wave.frequency.exponentialRampToValueAtTime(150, t + 0.85);
+      waveGain.gain.setValueAtTime(0, t);
+      waveGain.gain.linearRampToValueAtTime(0.3, t + 0.2);
+      waveGain.gain.exponentialRampToValueAtTime(0.001, t + 0.9);
+      wave.connect(waveGain);
+      waveGain.connect(this.ctx.destination);
+      wave.start(t);
+      wave.stop(t + 0.9);
+
+      // 2. Crystal Rune Shatter Burst
+      [987.77, 1318.51, 1760.00, 2349.32].forEach((freq, idx) => {
+        const osc = this.ctx!.createOscillator();
+        const g = this.ctx!.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(freq, t + 0.25 + idx * 0.06);
+        osc.frequency.exponentialRampToValueAtTime(freq * 0.5, t + 0.25 + idx * 0.06 + 0.4);
+        g.gain.setValueAtTime(0, t);
+        g.gain.linearRampToValueAtTime(0.22, t + 0.25 + idx * 0.06 + 0.02);
+        g.gain.exponentialRampToValueAtTime(0.001, t + 0.25 + idx * 0.06 + 0.5);
+        osc.connect(g);
+        g.connect(this.ctx!.destination);
+        osc.start(t + 0.25 + idx * 0.06);
+        osc.stop(t + 0.25 + idx * 0.06 + 0.55);
+      });
+
+      // 3. Mystical Chord (Amethyst Resonance - E Minor chord with high shimmer)
+      [329.63, 392.00, 493.88, 659.25, 987.77].forEach((freq, idx) => {
+        const osc = this.ctx!.createOscillator();
+        const g = this.ctx!.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, t + 0.5 + idx * 0.04);
+        g.gain.setValueAtTime(0, t);
+        g.gain.linearRampToValueAtTime(0.25, t + 0.5 + idx * 0.04 + 0.02);
+        g.gain.exponentialRampToValueAtTime(0.001, t + 0.5 + idx * 0.04 + 0.9);
+        osc.connect(g);
+        g.connect(this.ctx!.destination);
+        osc.start(t + 0.5 + idx * 0.04);
+        osc.stop(t + 0.5 + idx * 0.04 + 0.95);
       });
     } catch {
       // Ignored

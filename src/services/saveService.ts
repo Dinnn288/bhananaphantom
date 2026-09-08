@@ -102,8 +102,8 @@ class SaveService {
     const secondarySpirit = INITIAL_SPIRITS.find(s => s.id === 'kuntilanak_merah') || INITIAL_SPIRITS[1];
 
     const ownedSpirits: SpiritCompanion[] = [
-      applyAwakenRankToSpirit(starterSpirit, 1),
-      applyAwakenRankToSpirit(secondarySpirit, 1)
+      { ...applyAwakenRankToSpirit(starterSpirit, 1), duplicateCopies: 1 },
+      { ...applyAwakenRankToSpirit(secondarySpirit, 1), duplicateCopies: 1 }
     ];
 
     // Prepare heroes with custom lead
@@ -124,7 +124,7 @@ class SaveService {
       leadHeroId: leadHeroId,
       playerLevel: 1,
       playerExp: 0,
-      spiritGems: 150, // Starting bonus
+      spiritGems: 800, // Bonus akun baru: 800 Token Gacha
       unlockedChapterId: 'chap_0',
       unlockedClues: ['clue_partitur'],
       heroes: heroes,
